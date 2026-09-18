@@ -20,12 +20,11 @@ export default async function LootPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Historial de loot</h1>
+        <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
+          Historial de loot
+        </h1>
         {isOfficer(profile) && (
-          <Link
-            href="/loot/new"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium transition hover:bg-indigo-500"
-          >
+          <Link href="/loot/new" className="btn-primary text-sm">
             + Registrar ítem
           </Link>
         )}
@@ -35,9 +34,9 @@ export default async function LootPage() {
         <p className="text-neutral-400">Todavía no hay ítems registrados.</p>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-neutral-800">
+      <div className="card overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-neutral-900 text-neutral-400">
+          <thead className="bg-[var(--bg-elevated-2)] text-neutral-400">
             <tr>
               <th className="px-3 py-2 text-left">Ítem</th>
               <th className="px-3 py-2 text-left">Personaje</th>
@@ -47,14 +46,14 @@ export default async function LootPage() {
           </thead>
           <tbody>
             {(loot as LootWithCharacter[] | null)?.map((item) => (
-              <tr key={item.id} className="border-t border-neutral-800">
+              <tr key={item.id} className="border-t border-[var(--border)]">
                 <td className="px-3 py-2">
                   {item.wowhead_item_id ? (
                     <a
                       href={`https://www.wowhead.com/wotlk/item=${item.wowhead_item_id}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-indigo-400 hover:underline"
+                      className="text-[var(--frost-soft)] hover:underline"
                     >
                       {item.item_name}
                     </a>

@@ -25,11 +25,10 @@ export default async function RosterPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Roster</h1>
-        <Link
-          href="/roster/new"
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium transition hover:bg-indigo-500"
-        >
+        <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
+          Roster
+        </h1>
+        <Link href="/roster/new" className="btn-primary text-sm">
           + Registrar personaje
         </Link>
       </div>
@@ -40,16 +39,13 @@ export default async function RosterPage() {
 
       <div className="flex flex-col gap-4">
         {[...byOwner.entries()].map(([owner, chars]) => (
-          <div
-            key={owner}
-            className="rounded-lg border border-neutral-800 bg-neutral-900 p-4"
-          >
+          <div key={owner} className="card p-4">
             <p className="mb-3 text-sm font-medium text-neutral-400">{owner}</p>
             <div className="flex flex-col gap-2">
               {chars.map((character) => (
                 <div
                   key={character.id}
-                  className="flex items-center justify-between rounded-md bg-neutral-950 px-3 py-2"
+                  className="flex items-center justify-between rounded-md bg-[var(--bg-elevated-2)] px-3 py-2"
                 >
                   <div className="flex items-center gap-3">
                     <span
@@ -59,7 +55,7 @@ export default async function RosterPage() {
                       {character.name}
                     </span>
                     {character.is_main && (
-                      <span className="rounded bg-indigo-950 px-2 py-0.5 text-xs text-indigo-300">
+                      <span className="badge border border-[var(--gold)] bg-[var(--bg-elevated)] text-[var(--gold-soft)]">
                         Main
                       </span>
                     )}

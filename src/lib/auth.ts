@@ -19,5 +19,9 @@ export async function getCurrentProfile(): Promise<Tables<"profiles"> | null> {
 }
 
 export function isOfficer(profile: Tables<"profiles"> | null): boolean {
-  return profile?.guild_role === "officer";
+  return profile?.guild_role === "officer" || profile?.guild_role === "guild_master";
+}
+
+export function isGuildMaster(profile: Tables<"profiles"> | null): boolean {
+  return profile?.guild_role === "guild_master";
 }

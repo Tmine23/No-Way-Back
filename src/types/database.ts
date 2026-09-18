@@ -267,11 +267,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_guild_master: { Args: { uid: string }; Returns: boolean }
       is_officer: { Args: { uid: string }; Returns: boolean }
     }
     Enums: {
       character_role: "tank" | "healer" | "dps"
-      guild_role: "officer" | "raider" | "trial" | "applicant"
+      guild_role: "officer" | "raider" | "trial" | "applicant" | "guild_master"
       raid_event_status: "scheduled" | "completed" | "cancelled"
       rsvp_status: "confirmed" | "tentative" | "absent" | "bench"
       wow_class:

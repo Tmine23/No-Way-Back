@@ -8,7 +8,9 @@ export default async function NewRaidPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Nueva raid</h1>
+      <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
+        Nueva raid
+      </h1>
 
       <form action={createRaidEvent} className="flex max-w-lg flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm text-neutral-300">
@@ -41,10 +43,7 @@ export default async function NewRaidPage() {
           />
         </label>
 
-        <button
-          type="submit"
-          className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 font-medium transition hover:bg-indigo-500"
-        >
+        <button type="submit" className="btn-primary mt-2">
           Crear raid
         </button>
       </form>

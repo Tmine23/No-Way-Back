@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer } from "@/lib/auth";
+import { RAID_STATUS_LABELS } from "@/lib/wow";
 
 export default async function RaidsPage() {
   const supabase = await createClient();
@@ -14,12 +15,11 @@ export default async function RaidsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Raids</h1>
+        <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
+          Raids
+        </h1>
         {isOfficer(profile) && (
-          <Link
-            href="/raids/new"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium transition hover:bg-indigo-500"
-          >
+          <Link href="/raids/new" className="btn-primary text-sm">
             + Nueva raid
           </Link>
         )}
@@ -38,7 +38,7 @@ export default async function RaidsPage() {
             <Link
               key={raid.id}
               href={`/raids/${raid.id}`}
-              className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900 p-4 transition hover:border-neutral-700"
+              className="card flex items-center justify-between p-4 transition hover:border-[var(--border-strong)]"
             >
               <div>
                 <p className="font-semibold">{raid.title}</p>
@@ -47,8 +47,8 @@ export default async function RaidsPage() {
                 </p>
               </div>
               <div className="text-right text-sm">
-                <p className="text-neutral-300">{confirmed} confirmados</p>
-                <p className="capitalize text-neutral-500">{raid.status}</p>
+                <p className="text-[var(--frost-soft)]">{confirmed} confirmados</p>
+                <p className="text-neutral-500">{RAID_STATUS_LABELS[raid.status]}</p>
               </div>
             </Link>
           );

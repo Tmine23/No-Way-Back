@@ -51,3 +51,25 @@ export const RSVP_LABELS: Record<Enums<"rsvp_status">, string> = {
   absent: "Ausente",
   bench: "Banca",
 };
+
+export const GUILD_ROLE_LABELS: Record<Enums<"guild_role">, string> = {
+  guild_master: "Guild Master",
+  officer: "Officer",
+  raider: "Raider",
+  trial: "Trial",
+  applicant: "Applicant",
+};
+
+export const GUILD_ROLE_ORDER: Enums<"guild_role">[] = [
+  "guild_master",
+  "officer",
+  "raider",
+  "trial",
+  "applicant",
+];
+
+export const RAID_STATUS_LABELS: Record<Enums<"raid_event_status">, string> = {
+  scheduled: "Programada",
+  completed: "Completada",
+  cancelled: "Cancelada",
+};

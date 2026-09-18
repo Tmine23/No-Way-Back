@@ -116,7 +116,7 @@ export async function notifyRoster(raidEventId: string): Promise<NotifyRosterRes
     try {
       await sendDiscordDM(
         discordId,
-        `¡Quedaste en el roster de **${raid.title}** (${raidDate}) con ${characters.join(", ")}! Revisá los detalles acá: ${link}`,
+        `¡Quedaste en el roster de **${raid.title}** (${raidDate}) con ${characters.join(", ")}! Revisa los detalles aquí: ${link}`,
       );
       result.sent.push(name);
     } catch (err) {

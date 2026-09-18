@@ -30,7 +30,7 @@ export function ApplicationModal() {
         >
           {type === null ? (
             <>
-              <h2 className="text-lg font-semibold">¿Sos jugador nuevo o antiguo?</h2>
+              <h2 className="text-lg font-semibold">¿Eres jugador nuevo o antiguo?</h2>
               <p className="mt-1.5 text-sm text-[var(--text-muted)]">
                 Esto ayuda a los oficiales a revisar tu solicitud de ingreso.
               </p>
@@ -64,7 +64,7 @@ export function ApplicationModal() {
                 ← Cambiar
               </button>
               <h2 className="text-lg font-semibold">
-                {type === "new_player" ? "Cuéntanos de vos" : "Bienvenido de vuelta"}
+                {type === "new_player" ? "Cuéntanos de ti" : "Bienvenido de vuelta"}
               </h2>
 
               <form action={formAction} className="mt-4 flex flex-col gap-3">
@@ -73,7 +73,7 @@ export function ApplicationModal() {
                 {type === "returning_player" && (
                   <>
                     <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
-                      ¿De qué server venís?
+                      ¿De qué server vienes?
                       <input name="previous_server" className="input" placeholder="Ej. Warmane" />
                     </label>
                     <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
@@ -107,8 +107,8 @@ export function ApplicationModal() {
 
                 <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
                   {type === "new_player"
-                    ? "Contanos tu experiencia raideando"
-                    : "¿Por qué volvés / qué buscás en el guild?"}
+                    ? "Cuéntanos tu experiencia raideando"
+                    : "¿Por qué vuelves / qué buscas en el guild?"}
                   <textarea name="experience" rows={3} className="input" />
                 </label>
 

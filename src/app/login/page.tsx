@@ -34,9 +34,11 @@ export default function LoginPage() {
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       <div className="flex flex-col justify-center px-6 py-16 sm:px-12 lg:px-20">
-        <motion.div initial="hidden" animate="show" custom={0} variants={fadeUp} className="flex items-center gap-2.5">
-          <Image src="/logo-icon.png" alt="" width={32} height={32} priority />
-          <span className="text-sm font-medium text-[var(--text-muted)]">No Way Back</span>
+        <motion.div initial="hidden" animate="show" custom={0} variants={fadeUp} className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent-soft)]">
+            Hardcore Guild
+          </span>
         </motion.div>
 
         <motion.h1
@@ -44,11 +46,10 @@ export default function LoginPage() {
           animate="show"
           custom={1}
           variants={fadeUp}
-          className="mt-8 text-4xl font-semibold tracking-tight sm:text-5xl"
+          className="mt-4 flex items-center gap-4 text-5xl font-bold tracking-tight sm:text-6xl"
         >
-          Tu guild,
-          <br />
-          <span className="text-[var(--accent-soft)]">en un solo lugar</span>.
+          <Image src="/logo-icon.png" alt="" width={56} height={56} priority />
+          No Way Back
         </motion.h1>
 
         <motion.p
@@ -56,10 +57,10 @@ export default function LoginPage() {
           animate="show"
           custom={2}
           variants={fadeUp}
-          className="mt-4 max-w-md text-[var(--text-muted)]"
+          className="mt-5 max-w-md text-[var(--text-muted)]"
         >
-          Roster, raids y loot de No Way Back — nada de coordinarse a ciegas
-          por Discord.
+          Roster, raids y loot del guild — nada de coordinarse a ciegas por
+          Discord.
         </motion.p>
 
         <motion.button

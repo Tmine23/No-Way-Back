@@ -1,7 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer, displayName } from "@/lib/auth";
-import { GUILD_ROLE_LABELS } from "@/lib/wow";
 import { FadeIn } from "@/components/fade-in";
 
 export default async function HomePage() {
@@ -33,13 +33,11 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <FadeIn>
+      <FadeIn className="flex items-center gap-3">
+        <span className="h-8 w-1 rounded-full bg-[var(--accent)]" />
         <h1 className="text-2xl font-semibold tracking-tight">
           Bienvenido{profile ? `, ${displayName(profile)}` : ""}
         </h1>
-        <p className="text-[var(--text-muted)]">
-          Frostmourne · parche 3.3.5 mítico · en carrera por realm first
-        </p>
       </FadeIn>
 
       {!myCharacterCount && (
@@ -59,41 +57,37 @@ export default async function HomePage() {
         </FadeIn>
       )}
 
-      {profile?.guild_role === "applicant" && (
-        <FadeIn delay={0.08}>
-          <div className="card border-l-2 border-l-[var(--accent)] p-4 text-sm text-[var(--text-muted)]">
-            Tu rango actual es{" "}
-            <strong className="text-[var(--text)]">{GUILD_ROLE_LABELS.applicant}</strong>.
-            Un Officer revisará tu registro y te asignará tu rango dentro del
-            guild.
-          </div>
-        </FadeIn>
-      )}
-
-      <FadeIn delay={0.1} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <FadeIn delay={0.1}>
         <Link
           href="/raids"
-          className="card flex flex-col justify-between p-6 transition-colors hover:border-[var(--border-strong)] lg:col-span-2"
+          className="card relative flex flex-col overflow-hidden p-8 transition-colors hover:border-[var(--border-strong)]"
         >
+          <Image
+            src="/logo-icon.png"
+            alt=""
+            width={180}
+            height={180}
+            className="pointer-events-none absolute -right-8 -top-8 opacity-[0.06]"
+          />
           <p className="text-sm text-[var(--text-muted)]">Próxima raid</p>
-          <p className="mt-2 text-xl font-medium">
+          <p className="relative mt-2 text-3xl font-semibold tracking-tight">
             {nextRaid ? nextRaid.title : "Sin raids programadas"}
           </p>
           {nextRaid && (
-            <p className="mt-1 font-mono text-sm text-[var(--accent-soft)]">
+            <p className="relative mt-2 font-mono text-sm text-[var(--accent-soft)]">
               {new Date(nextRaid.scheduled_at).toLocaleString("es-ES")}
             </p>
           )}
         </Link>
+      </FadeIn>
 
-        <div className="flex flex-col divide-y divide-[var(--border)] card">
-          <StatRow label="Personajes registrados" value={characterCount ?? 0} />
-          <StatRow label="Ítems en historial" value={lootCount ?? 0} />
-        </div>
+      <FadeIn delay={0.15} className="grid grid-cols-2 gap-4">
+        <StatTile label="Personajes registrados" value={characterCount ?? 0} />
+        <StatTile label="Ítems en historial" value={lootCount ?? 0} />
       </FadeIn>
 
       {officer && (
-        <FadeIn delay={0.15} className="card p-5">
+        <FadeIn delay={0.2} className="card p-5">
           <p className="mb-3 font-medium">Panel de oficiales</p>
           <div className="flex flex-wrap gap-3">
             <Link href="/raids/new" className="btn-primary text-sm">
@@ -112,11 +106,13 @@ export default async function HomePage() {
   );
 }
 
-function StatRow({ label, value }: { label: string; value: number }) {
+function StatTile({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex items-center justify-between px-5 py-4">
-      <p className="text-sm text-[var(--text-muted)]">{label}</p>
-      <p className="font-mono text-xl font-medium">{value}</p>
+    <div className="card p-5">
+      <p className="font-mono text-4xl font-semibold text-[var(--accent-soft)]">
+        {value}
+      </p>
+      <p className="mt-1 text-sm text-[var(--text-muted)]">{label}</p>
     </div>
   );
 }

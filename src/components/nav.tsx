@@ -35,14 +35,37 @@ export function Nav({
   ];
 
   return (
-    <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--bg)]/90 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <Image src="/logo-icon.png" alt="" width={28} height={28} />
-          <span className="text-[15px] font-semibold tracking-tight">No Way Back</span>
+    <header className="sticky top-0 z-10 bg-[var(--bg)]/95 backdrop-blur">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3.5">
+        <Link href="/" className="flex items-center gap-2.5">
+          <Image src="/logo-icon.png" alt="" width={38} height={38} />
+          <span className="text-xl font-bold tracking-tight">No Way Back</span>
         </Link>
 
-        <nav className="order-3 flex w-full gap-1 overflow-x-auto text-sm sm:order-none sm:w-auto sm:overflow-visible">
+        <div className="flex shrink-0 items-center gap-3 text-sm">
+          {profile && (
+            <div className="flex items-center gap-2">
+              {profile.discord_avatar_url && (
+                <Image
+                  src={profile.discord_avatar_url}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="rounded-full border border-[var(--border)]"
+                />
+              )}
+              <span className="text-[var(--text)]">{displayName(profile)}</span>
+              <span className={`badge hidden sm:inline-flex ${ROLE_BADGE_STYLES[profile.guild_role]}`}>
+                {GUILD_ROLE_LABELS[profile.guild_role]}
+              </span>
+            </div>
+          )}
+          <SignOutButton />
+        </div>
+      </div>
+
+      <nav className="border-y border-[var(--border)] bg-[var(--surface)]">
+        <div className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 py-1.5 text-sm">
           {links.map((link) => {
             const active =
               link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
@@ -65,29 +88,8 @@ export function Nav({
               </Link>
             );
           })}
-        </nav>
-
-        <div className="ml-auto flex shrink-0 items-center gap-3 text-sm">
-          {profile && (
-            <div className="flex items-center gap-2">
-              {profile.discord_avatar_url && (
-                <Image
-                  src={profile.discord_avatar_url}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="rounded-full border border-[var(--border)]"
-                />
-              )}
-              <span className="text-[var(--text)]">{displayName(profile)}</span>
-              <span className={`badge hidden sm:inline-flex ${ROLE_BADGE_STYLES[profile.guild_role]}`}>
-                {GUILD_ROLE_LABELS[profile.guild_role]}
-              </span>
-            </div>
-          )}
-          <SignOutButton />
         </div>
-      </div>
+      </nav>
     </header>
   );
 }

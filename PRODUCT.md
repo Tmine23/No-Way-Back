@@ -12,7 +12,7 @@ Next.js (App Router) + Tailwind CSS + Supabase (Postgres, Auth via Discord OAuth
 
 ## Users
 
-Members of the World of Warcraft guild "No Way Back," playing on the Frostmourne realm (Whitemane, patch 3.3.5 with mythic-tier content), pursuing a realm-first raid clear. Three practical roles:
+Members of the World of Warcraft guild "No Way Back." The app is meant to outlive any single server, patch, or season the guild happens to be playing on — no realm/version-specific facts belong in the UI. Three practical roles:
 - **Guild Master** (owner/admin): full control, assigns Officer rank.
 - **Officers**: schedule raids, build raid rosters, record loot, review/promote applicants.
 - **Raiders/Trials/Applicants**: register their characters (main + alts), RSVP to raids per character, view loot history and roster.
@@ -31,16 +31,17 @@ Unlike a generic Discord bot (Raid-Helper), this tracks state a bot cannot: mult
 
 - Players primarily interact with Discord day-to-day; the app is a secondary destination they're asked to visit for structured actions (register a character, RSVP, check loot).
 - Raid nights happen on a recurring schedule; officers plan composition ahead of time from who has confirmed.
-- The realm-first race means schedule/RSVP turnaround matters — officers need to see attendance state at a glance.
+- Schedule/RSVP turnaround matters — officers need to see attendance state at a glance.
 
 ## Capabilities and Constraints
 
 - Discord OAuth via Supabase Auth is the only login method (confirmed, already implemented).
+- Access is gated: after login and setting an in-game display name, a new member sits in `applicant` state and cannot see any guild data until an Officer or the Guild Master approves them by moving them to another rank. This is deliberate — the Guild Master only wants people they've vetted in the roster.
 - Every member can have multiple characters (main + alts); class/spec/role/ilvl/professions are tracked per character.
 - Role-based permissions: Guild Master > Officer > Raider/Trial/Applicant, enforced at the database level (RLS + trigger), not just in the UI.
+- Confirmed: a raid roster builder where officers mark which confirmed characters make the final tank/healer/dps lineup for a raid.
+- Confirmed: a spreadsheet-style roster view grouping every member's characters together (inspired by a reference spreadsheet the user uses today).
 - Planned/open: sending Discord DMs to members to prompt raid RSVP confirmation (requires a Discord bot application in addition to the existing OAuth app — undecided/not yet built).
-- Planned/open: a raid-composition builder that assigns confirmed characters into tank/healer/dps slots and can be "locked in" as the night's roster.
-- Planned/open: a denser, spreadsheet-like view of all members and their characters together (inspired by a reference spreadsheet the user uses today), as an alternative or complement to the current card-based roster page.
 
 ## Brand Commitments
 

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "No Way Back",
-  description: "Guild management for No Way Back — Frostmourne realm first",
+  description: "Guild hub for No Way Back — roster, raids, and loot in one place",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

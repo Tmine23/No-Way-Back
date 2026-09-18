@@ -46,9 +46,9 @@ export default function LoginPage() {
           variants={fadeUp}
           className="mt-8 text-4xl font-semibold tracking-tight sm:text-5xl"
         >
-          Frostmourne, camino
+          Tu guild,
           <br />
-          al <span className="text-[var(--accent-soft)]">realm first</span>.
+          <span className="text-[var(--accent-soft)]">en un solo lugar</span>.
         </motion.h1>
 
         <motion.p
@@ -58,8 +58,8 @@ export default function LoginPage() {
           variants={fadeUp}
           className="mt-4 max-w-md text-[var(--text-muted)]"
         >
-          Patch 3.3.5, contenido mítico. Roster, raids y loot del guild en un
-          solo lugar — nada de coordinarse a ciegas por Discord.
+          Roster, raids y loot de No Way Back — nada de coordinarse a ciegas
+          por Discord.
         </motion.p>
 
         <motion.button
@@ -81,8 +81,8 @@ export default function LoginPage() {
           variants={fadeUp}
           className="mt-6 max-w-sm text-xs text-[var(--text-faint)]"
         >
-          Tu cuenta se registra automáticamente. Un Officer revisará tu
-          solicitud y te asignará tu rango dentro del guild.
+          Tu cuenta se registra automáticamente, pero queda pendiente de
+          aprobación hasta que un Officer o el Guild Master te confirme.
         </motion.p>
       </div>
 

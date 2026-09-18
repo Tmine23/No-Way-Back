@@ -21,7 +21,7 @@ export function NicknameModal() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="text-lg font-semibold">¿Cómo te conocen en Whitemane?</h2>
+          <h2 className="text-lg font-semibold">¿Cómo te conocen en el juego?</h2>
           <p className="mt-1.5 text-sm text-[var(--text-muted)]">
             No es tu usuario de Discord — es el nombre por el que el guild te
             reconoce en el juego. Podrás cambiarlo después desde tu perfil.

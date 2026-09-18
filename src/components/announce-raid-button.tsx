@@ -1,18 +1,24 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { notifyRoster, type NotifyRosterResult } from "@/app/(app)/raids/actions";
+import { announceRaid, type AnnounceRaidResult } from "@/app/(app)/raids/actions";
 
-export function NotifyRosterButton({ raidEventId }: { raidEventId: string }) {
+export function AnnounceRaidButton({
+  raidEventId,
+  alreadyAnnounced,
+}: {
+  raidEventId: string;
+  alreadyAnnounced: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
-  const [result, setResult] = useState<NotifyRosterResult | null>(null);
+  const [result, setResult] = useState<AnnounceRaidResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function handleClick() {
     setError(null);
     startTransition(async () => {
       try {
-        const res = await notifyRoster(raidEventId);
+        const res = await announceRaid(raidEventId);
         setResult(res);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido");
@@ -22,8 +28,12 @@ export function NotifyRosterButton({ raidEventId }: { raidEventId: string }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <button onClick={handleClick} disabled={isPending} className="btn-secondary text-sm disabled:opacity-60">
-        {isPending ? "Enviando…" : "Notificar roster por Discord"}
+      <button onClick={handleClick} disabled={isPending} className="btn-primary text-sm disabled:opacity-60">
+        {isPending
+          ? "Enviando…"
+          : alreadyAnnounced
+            ? "Reenviar invitación por Discord"
+            : "Enviar invitación por Discord"}
       </button>
 
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}

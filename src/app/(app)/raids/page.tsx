@@ -9,7 +9,7 @@ export default async function RaidsPage() {
 
   const { data: raids } = await supabase
     .from("raid_events")
-    .select("*, raid_signups(status)")
+    .select("*, raid_signups(slot_index)")
     .order("scheduled_at", { ascending: false });
 
   return (
@@ -29,9 +29,7 @@ export default async function RaidsPage() {
 
       <div className="flex flex-col gap-3">
         {raids?.map((raid) => {
-          const confirmed = raid.raid_signups.filter(
-            (s) => s.status === "confirmed",
-          ).length;
+          const assigned = raid.raid_signups.filter((s) => s.slot_index !== null).length;
           return (
             <Link
               key={raid.id}
@@ -45,7 +43,9 @@ export default async function RaidsPage() {
                 </p>
               </div>
               <div className="text-right text-sm">
-                <p className="font-mono text-[var(--accent-soft)]">{confirmed} confirmados</p>
+                <p className="font-mono text-[var(--accent-soft)]">
+                  {assigned}/{raid.raid_size}
+                </p>
                 <p className="text-[var(--text-faint)]">{RAID_STATUS_LABELS[raid.status]}</p>
               </div>
             </Link>

@@ -47,10 +47,13 @@ export const ROLE_LABELS: Record<Enums<"character_role">, string> = {
 
 export const RSVP_LABELS: Record<Enums<"rsvp_status">, string> = {
   confirmed: "Confirmado",
-  tentative: "Tentativo",
-  absent: "Ausente",
+  tentative: "Pendiente",
+  absent: "No puede",
   bench: "Banca",
 };
+
+export const GROUP_SIZE = 5;
+export const BENCH_SIZE = 5;
 
 export const GUILD_ROLE_LABELS: Record<Enums<"guild_role">, string> = {
   guild_master: "Guild Master",

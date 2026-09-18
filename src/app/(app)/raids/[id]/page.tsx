@@ -2,16 +2,14 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer } from "@/lib/auth";
 import { RsvpControls } from "@/components/rsvp-controls";
-import { RosterBuilder } from "@/components/roster-builder";
-import { NotifyRosterButton } from "@/components/notify-roster-button";
-import { CLASS_COLORS, RSVP_LABELS } from "@/lib/wow";
+import { RaidComposition } from "@/components/raid-composition";
+import { AnnounceRaidButton } from "@/components/announce-raid-button";
 import type { Enums, Tables } from "@/types/database";
 
-type SignupWithCharacter = Tables<"raid_signups"> & {
-  characters: Tables<"characters">;
+type CharacterWithOwner = Tables<"characters"> & {
+  profiles: { known_as: string | null; discord_username: string } | null;
 };
-
-const SECONDARY_STATUSES: Enums<"rsvp_status">[] = ["tentative", "bench", "absent"];
+type SignupWithCharacter = Tables<"raid_signups"> & { characters: CharacterWithOwner };
 
 export default async function RaidDetailPage({
   params,
@@ -21,6 +19,7 @@ export default async function RaidDetailPage({
   const { id } = await params;
   const supabase = await createClient();
   const profile = await getCurrentProfile();
+  const officer = isOfficer(profile);
 
   const { data: raid } = await supabase
     .from("raid_events")
@@ -30,87 +29,68 @@ export default async function RaidDetailPage({
 
   if (!raid) notFound();
 
-  const { data: signups } = await supabase
-    .from("raid_signups")
-    .select("*, characters(*)")
-    .eq("raid_event_id", id);
+  const [{ data: signups }, { data: allCharacters }, { data: myCharacters }] = await Promise.all([
+    supabase
+      .from("raid_signups")
+      .select("*, characters(*, profiles(known_as, discord_username))")
+      .eq("raid_event_id", id),
+    officer
+      ? supabase.from("characters").select("*, profiles(known_as, discord_username)")
+      : Promise.resolve({ data: [] as CharacterWithOwner[] }),
+    profile
+      ? supabase.from("characters").select("*").eq("owner_id", profile.id)
+      : Promise.resolve({ data: [] as Tables<"characters">[] }),
+  ]);
 
-  const { data: myCharacters } = profile
-    ? await supabase.from("characters").select("*").eq("owner_id", profile.id)
-    : { data: [] as Tables<"characters">[] };
+  const typedSignups = (signups ?? []) as SignupWithCharacter[];
+  const announced = raid.announced_at !== null;
 
+  const invitedCharacterIds = new Set(typedSignups.map((s) => s.character_id));
+  const myInvitedCharacters = (myCharacters ?? []).filter((c) => invitedCharacterIds.has(c.id));
   const currentStatuses = Object.fromEntries(
-    (signups ?? []).map((s) => [s.character_id, s.status]),
+    typedSignups.map((s) => [s.character_id, s.status]),
   ) as Record<string, Enums<"rsvp_status">>;
-
-  const grouped: Record<Enums<"rsvp_status">, SignupWithCharacter[]> = {
-    confirmed: [],
-    tentative: [],
-    bench: [],
-    absent: [],
-  };
-  for (const signup of (signups ?? []) as SignupWithCharacter[]) {
-    grouped[signup.status].push(signup);
-  }
 
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{raid.title}</h1>
         <p className="font-mono text-sm text-[var(--accent-soft)]">
-          {new Date(raid.scheduled_at).toLocaleString("es-ES")}
+          {new Date(raid.scheduled_at).toLocaleString("es-ES")} · {raid.raid_size} jugadores
         </p>
         {raid.notes && <p className="mt-2 text-[var(--text-muted)]">{raid.notes}</p>}
       </div>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      {!officer && !announced && (
+        <p className="text-[var(--text-muted)]">
+          La composición de esta raid todavía se está armando. Te avisaremos por
+          Discord cuando esté lista.
+        </p>
+      )}
+
+      {announced && myInvitedCharacters.length > 0 && (
         <div>
           <h2 className="mb-3 text-lg font-medium">Tu asistencia</h2>
-          {myCharacters && myCharacters.length > 0 ? (
-            <RsvpControls
-              raidEventId={id}
-              characters={myCharacters}
-              currentStatuses={currentStatuses}
-            />
-          ) : (
-            <p className="text-[var(--text-muted)]">
-              No tienes personajes registrados todavía.
-            </p>
-          )}
+          <RsvpControls
+            raidEventId={id}
+            characters={myInvitedCharacters}
+            currentStatuses={currentStatuses}
+          />
         </div>
+      )}
 
-        <div className="flex flex-col gap-4">
-          {SECONDARY_STATUSES.map((status) => (
-            <div key={status}>
-              <p className="mb-1 text-sm font-medium text-[var(--text-muted)]">
-                {RSVP_LABELS[status]} ({grouped[status].length})
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {grouped[status].map((s) => (
-                  <span
-                    key={s.id}
-                    className="rounded-md bg-[var(--surface-2)] px-3 py-1 text-sm"
-                    style={{ color: CLASS_COLORS[s.characters.class] }}
-                  >
-                    {s.characters.name}
-                  </span>
-                ))}
-                {grouped[status].length === 0 && (
-                  <span className="text-sm text-[var(--text-faint)]">—</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {(officer || announced) && (
+        <RaidComposition
+          raidEventId={id}
+          raidSize={raid.raid_size}
+          allCharacters={(allCharacters ?? []) as CharacterWithOwner[]}
+          signups={typedSignups}
+          canEdit={officer}
+          showStatus={announced}
+        />
+      )}
 
-      <RosterBuilder
-        raidEventId={id}
-        confirmed={grouped.confirmed}
-        canEdit={isOfficer(profile)}
-      />
-
-      {isOfficer(profile) && <NotifyRosterButton raidEventId={id} />}
+      {officer && <AnnounceRaidButton raidEventId={id} alreadyAnnounced={announced} />}
     </div>
   );
 }

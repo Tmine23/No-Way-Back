@@ -5,12 +5,7 @@ import { setSignup } from "@/app/(app)/raids/actions";
 import { RSVP_LABELS } from "@/lib/wow";
 import type { Enums, Tables } from "@/types/database";
 
-const STATUSES: Enums<"rsvp_status">[] = [
-  "confirmed",
-  "tentative",
-  "bench",
-  "absent",
-];
+const STATUSES: Enums<"rsvp_status">[] = ["confirmed", "tentative", "absent"];
 
 export function RsvpControls({
   raidEventId,
@@ -28,7 +23,7 @@ export function RsvpControls({
       {characters.map((character) => (
         <div
           key={character.id}
-          className="flex items-center justify-between rounded-md bg-neutral-950 px-3 py-2"
+          className="flex items-center justify-between rounded-md bg-[var(--surface-2)] px-3 py-2"
         >
           <span className="font-medium">{character.name}</span>
           <select

@@ -240,28 +240,34 @@ export type Database = {
       }
       raid_events: {
         Row: {
+          announced_at: string | null
           created_at: string
           created_by: string
           id: string
           notes: string | null
+          raid_size: number
           scheduled_at: string
           status: Database["public"]["Enums"]["raid_event_status"]
           title: string
         }
         Insert: {
+          announced_at?: string | null
           created_at?: string
           created_by: string
           id?: string
           notes?: string | null
+          raid_size?: number
           scheduled_at: string
           status?: Database["public"]["Enums"]["raid_event_status"]
           title: string
         }
         Update: {
+          announced_at?: string | null
           created_at?: string
           created_by?: string
           id?: string
           notes?: string | null
+          raid_size?: number
           scheduled_at?: string
           status?: Database["public"]["Enums"]["raid_event_status"]
           title?: string
@@ -280,25 +286,25 @@ export type Database = {
         Row: {
           character_id: string
           id: string
-          in_roster: boolean
           raid_event_id: string
           signed_up_at: string
+          slot_index: number | null
           status: Database["public"]["Enums"]["rsvp_status"]
         }
         Insert: {
           character_id: string
           id?: string
-          in_roster?: boolean
           raid_event_id: string
           signed_up_at?: string
+          slot_index?: number | null
           status?: Database["public"]["Enums"]["rsvp_status"]
         }
         Update: {
           character_id?: string
           id?: string
-          in_roster?: boolean
           raid_event_id?: string
           signed_up_at?: string
+          slot_index?: number | null
           status?: Database["public"]["Enums"]["rsvp_status"]
         }
         Relationships: [

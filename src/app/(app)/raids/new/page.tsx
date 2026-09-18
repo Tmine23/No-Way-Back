@@ -32,6 +32,14 @@ export default async function NewRaidPage() {
         </label>
 
         <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
+          Tamaño de la raid
+          <select name="raid_size" className="input" defaultValue="25">
+            <option value="25">25 jugadores</option>
+            <option value="10">10 jugadores</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Notas (opcional)
           <textarea
             name="notes"

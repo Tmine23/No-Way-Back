@@ -59,8 +59,7 @@ export default function LoginPage() {
           variants={fadeUp}
           className="mt-5 max-w-md text-[var(--text-muted)]"
         >
-          Roster, raids y loot del guild — nada de coordinarse a ciegas por
-          Discord.
+          Roster, raids y loot del guild.
         </motion.p>
 
         <motion.button

@@ -12,6 +12,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          applicant_type: Database["public"]["Enums"]["applicant_type"]
+          class: Database["public"]["Enums"]["wow_class"] | null
+          created_at: string
+          experience: string | null
+          gearscore: number | null
+          id: string
+          previous_guild: string | null
+          previous_server: string | null
+          profile_id: string
+          spec: string | null
+        }
+        Insert: {
+          applicant_type: Database["public"]["Enums"]["applicant_type"]
+          class?: Database["public"]["Enums"]["wow_class"] | null
+          created_at?: string
+          experience?: string | null
+          gearscore?: number | null
+          id?: string
+          previous_guild?: string | null
+          previous_server?: string | null
+          profile_id: string
+          spec?: string | null
+        }
+        Update: {
+          applicant_type?: Database["public"]["Enums"]["applicant_type"]
+          class?: Database["public"]["Enums"]["wow_class"] | null
+          created_at?: string
+          experience?: string | null
+          gearscore?: number | null
+          id?: string
+          previous_guild?: string | null
+          previous_server?: string | null
+          profile_id?: string
+          spec?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boss_kills: {
         Row: {
           boss_name: string
@@ -165,6 +212,7 @@ export type Database = {
         Row: {
           created_at: string
           discord_avatar_url: string | null
+          discord_id: string | null
           discord_username: string
           guild_role: Database["public"]["Enums"]["guild_role"]
           id: string
@@ -173,6 +221,7 @@ export type Database = {
         Insert: {
           created_at?: string
           discord_avatar_url?: string | null
+          discord_id?: string | null
           discord_username: string
           guild_role?: Database["public"]["Enums"]["guild_role"]
           id: string
@@ -181,6 +230,7 @@ export type Database = {
         Update: {
           created_at?: string
           discord_avatar_url?: string | null
+          discord_id?: string | null
           discord_username?: string
           guild_role?: Database["public"]["Enums"]["guild_role"]
           id?: string
@@ -277,6 +327,7 @@ export type Database = {
       is_officer: { Args: { uid: string }; Returns: boolean }
     }
     Enums: {
+      applicant_type: "new_player" | "returning_player"
       character_role: "tank" | "healer" | "dps"
       guild_role: "officer" | "raider" | "trial" | "applicant" | "guild_master"
       raid_event_status: "scheduled" | "completed" | "cancelled"

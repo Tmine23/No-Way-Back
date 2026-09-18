@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer, isApproved } from "@/lib/auth";
 import { Nav } from "@/components/nav";
 import { NicknameModal } from "@/components/nickname-modal";
+import { ApplicationModal } from "@/components/application-modal";
 import { PendingApproval } from "@/components/pending-approval";
 
 export default async function AppLayout({
@@ -26,6 +27,16 @@ export default async function AppLayout({
   }
 
   if (profile && !isApproved(profile)) {
+    const { data: application } = await supabase
+      .from("applications")
+      .select("id")
+      .eq("profile_id", profile.id)
+      .maybeSingle();
+
+    if (!application) {
+      return <ApplicationModal />;
+    }
+
     return <PendingApproval profile={profile} />;
   }
 

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer } from "@/lib/auth";
 import { RsvpControls } from "@/components/rsvp-controls";
 import { RosterBuilder } from "@/components/roster-builder";
+import { NotifyRosterButton } from "@/components/notify-roster-button";
 import { CLASS_COLORS, RSVP_LABELS } from "@/lib/wow";
 import type { Enums, Tables } from "@/types/database";
 
@@ -108,6 +109,8 @@ export default async function RaidDetailPage({
         confirmed={grouped.confirmed}
         canEdit={isOfficer(profile)}
       />
+
+      {isOfficer(profile) && <NotifyRosterButton raidEventId={id} />}
     </div>
   );
 }

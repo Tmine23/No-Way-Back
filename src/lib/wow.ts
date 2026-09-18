@@ -73,3 +73,8 @@ export const RAID_STATUS_LABELS: Record<Enums<"raid_event_status">, string> = {
   completed: "Completada",
   cancelled: "Cancelada",
 };
+
+export const APPLICANT_TYPE_LABELS: Record<Enums<"applicant_type">, string> = {
+  new_player: "Jugador nuevo",
+  returning_player: "Jugador antiguo",
+};

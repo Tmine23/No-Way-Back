@@ -8,12 +8,10 @@ export default async function NewRaidPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
-        Nueva raid
-      </h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Nueva raid</h1>
 
       <form action={createRaidEvent} className="flex max-w-lg flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Título
           <input
             name="title"
@@ -23,7 +21,7 @@ export default async function NewRaidPage() {
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Fecha y hora
           <input
             name="scheduled_at"
@@ -33,7 +31,7 @@ export default async function NewRaidPage() {
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Notas (opcional)
           <textarea
             name="notes"

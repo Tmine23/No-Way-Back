@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer } from "@/lib/auth";
 import { Nav } from "@/components/nav";
+import { NicknameModal } from "@/components/nickname-modal";
 
 export default async function AppLayout({
   children,
@@ -25,6 +26,7 @@ export default async function AppLayout({
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         {children}
       </main>
+      {profile && !profile.known_as && <NicknameModal />}
     </div>
   );
 }

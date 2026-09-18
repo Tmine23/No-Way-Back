@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile, isOfficer, isGuildMaster } from "@/lib/auth";
+import { getCurrentProfile, isOfficer, isGuildMaster, displayName } from "@/lib/auth";
 import { RoleSelect } from "@/components/role-select";
 import { GUILD_ROLE_LABELS } from "@/lib/wow";
 import type { Enums } from "@/types/database";
@@ -31,43 +31,38 @@ export default async function MembersPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
-          Miembros
-        </h1>
-        <p className="text-neutral-400">
+        <h1 className="text-2xl font-semibold tracking-tight">Miembros</h1>
+        <p className="text-[var(--text-muted)]">
           Gestiona el rol de cada miembro del guild.
           {!viewerIsGuildMaster &&
             " Solo el Guild Master puede asignar el rol de Officer."}
         </p>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="card divide-y divide-[var(--border)]">
         {members?.map((member) => {
           const isProtectedRole =
             member.guild_role === "officer" || member.guild_role === "guild_master";
           const canEdit = viewerIsGuildMaster || !isProtectedRole;
 
           return (
-            <div
-              key={member.id}
-              className="card flex items-center justify-between p-3"
-            >
+            <div key={member.id} className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-3">
                 {member.discord_avatar_url ? (
                   <Image
                     src={member.discord_avatar_url}
                     alt=""
-                    width={36}
-                    height={36}
+                    width={32}
+                    height={32}
                     className="rounded-full"
                   />
                 ) : (
-                  <div className="h-9 w-9 rounded-full bg-neutral-800" />
+                  <div className="h-8 w-8 rounded-full bg-[var(--surface-2)]" />
                 )}
                 <div>
-                  <p className="font-medium">{member.discord_username}</p>
-                  <p className="text-xs text-neutral-500">
-                    {GUILD_ROLE_LABELS[member.guild_role]}
+                  <p className="font-medium">{displayName(member)}</p>
+                  <p className="text-xs text-[var(--text-faint)]">
+                    {member.discord_username} · {GUILD_ROLE_LABELS[member.guild_role]}
                   </p>
                 </div>
               </div>

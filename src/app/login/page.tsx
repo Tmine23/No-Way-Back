@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "motion/react";
 import { createClient } from "@/lib/supabase/client";
 
 const FEATURES = [
@@ -8,6 +9,15 @@ const FEATURES = [
   { title: "Calendario de raids", desc: "Confirma tu asistencia por personaje, sin depender de Discord." },
   { title: "Historial de loot", desc: "Cada ítem ganado queda registrado con boss y fecha." },
 ];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] as const },
+  }),
+};
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -22,42 +32,81 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-10 px-4 py-16">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <Image src="/logo.svg" alt="No Way Back" width={140} height={140} priority />
-        <div>
-          <h1 className="font-display text-4xl font-bold tracking-wide text-[var(--gold-soft)]">
-            No Way Back
-          </h1>
-          <p className="mt-2 text-[var(--frost-soft)]">
-            Frostmourne · Parche 3.3.5 Mítico
-          </p>
-          <p className="mt-1 text-sm text-neutral-500">
-            En carrera por el Realm First
-          </p>
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+      <div className="flex flex-col justify-center px-6 py-16 sm:px-12 lg:px-20">
+        <motion.div initial="hidden" animate="show" custom={0} variants={fadeUp} className="flex items-center gap-2.5">
+          <Image src="/logo.svg" alt="" width={32} height={32} priority />
+          <span className="text-sm font-medium text-[var(--text-muted)]">No Way Back</span>
+        </motion.div>
+
+        <motion.h1
+          initial="hidden"
+          animate="show"
+          custom={1}
+          variants={fadeUp}
+          className="mt-8 text-4xl font-semibold tracking-tight sm:text-5xl"
+        >
+          Frostmourne, camino
+          <br />
+          al <span className="text-[var(--accent-soft)]">realm first</span>.
+        </motion.h1>
+
+        <motion.p
+          initial="hidden"
+          animate="show"
+          custom={2}
+          variants={fadeUp}
+          className="mt-4 max-w-md text-[var(--text-muted)]"
+        >
+          Patch 3.3.5, contenido mítico. Roster, raids y loot del guild en un
+          solo lugar — nada de coordinarse a ciegas por Discord.
+        </motion.p>
+
+        <motion.button
+          initial="hidden"
+          animate="show"
+          custom={3}
+          variants={fadeUp}
+          onClick={signInWithDiscord}
+          className="btn-primary mt-8 flex w-fit items-center gap-2"
+        >
+          <DiscordIcon />
+          Entrar con Discord
+        </motion.button>
+
+        <motion.p
+          initial="hidden"
+          animate="show"
+          custom={4}
+          variants={fadeUp}
+          className="mt-6 max-w-sm text-xs text-[var(--text-faint)]"
+        >
+          Tu cuenta se registra automáticamente. Un Officer revisará tu
+          solicitud y te asignará tu rango dentro del guild.
+        </motion.p>
+      </div>
+
+      <div className="hidden border-l border-[var(--border)] bg-[var(--surface)] lg:flex lg:flex-col lg:justify-center lg:px-16">
+        <div className="flex flex-col divide-y divide-[var(--border)]">
+          {FEATURES.map((f, i) => (
+            <motion.div
+              key={f.title}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.15 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-start gap-4 py-6 first:pt-0 last:pb-0"
+            >
+              <span className="mt-0.5 font-mono text-sm text-[var(--accent-soft)]">
+                0{i + 1}
+              </span>
+              <div>
+                <p className="font-medium">{f.title}</p>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">{f.desc}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
-
-      <button onClick={signInWithDiscord} className="btn-primary flex items-center gap-2">
-        <DiscordIcon />
-        Entrar con Discord
-      </button>
-
-      <div className="grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
-        {FEATURES.map((f) => (
-          <div key={f.title} className="card p-4 text-center">
-            <p className="font-display text-sm font-semibold text-[var(--frost-soft)]">
-              {f.title}
-            </p>
-            <p className="mt-1 text-sm text-neutral-400">{f.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      <p className="max-w-md text-center text-xs text-neutral-600">
-        Tu cuenta se registra automáticamente al entrar. Un Officer revisará tu
-        solicitud y te asignará tu rango dentro del guild.
-      </p>
     </div>
   );
 }

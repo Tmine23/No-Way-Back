@@ -4,9 +4,7 @@ import { WOW_CLASSES, CLASS_LABELS } from "@/lib/wow";
 export default function NewCharacterPage() {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
-        Registrar personaje
-      </h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Registrar personaje</h1>
 
       <form action={createCharacter} className="flex max-w-lg flex-col gap-4">
         <Field label="Nombre del personaje">
@@ -72,7 +70,7 @@ export default function NewCharacterPage() {
           <input name="armory_url" className="input" placeholder="https://..." />
         </Field>
 
-        <label className="flex items-center gap-2 text-sm text-neutral-300">
+        <label className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
           <input type="checkbox" name="is_main" className="h-4 w-4" />
           Este es mi personaje principal
         </label>
@@ -93,7 +91,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="flex flex-col gap-1 text-sm text-neutral-300">
+    <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
       {label}
       {children}
     </label>

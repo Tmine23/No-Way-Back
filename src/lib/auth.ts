@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
 
+export { isOfficer, isGuildMaster, displayName } from "@/lib/roles";
+
 export async function getCurrentProfile(): Promise<Tables<"profiles"> | null> {
   const supabase = await createClient();
   const {
@@ -16,12 +18,4 @@ export async function getCurrentProfile(): Promise<Tables<"profiles"> | null> {
     .single();
 
   return profile;
-}
-
-export function isOfficer(profile: Tables<"profiles"> | null): boolean {
-  return profile?.guild_role === "officer" || profile?.guild_role === "guild_master";
-}
-
-export function isGuildMaster(profile: Tables<"profiles"> | null): boolean {
-  return profile?.guild_role === "guild_master";
 }

@@ -19,12 +19,10 @@ export default async function NewLootPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
-        Registrar ítem
-      </h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Registrar ítem</h1>
 
       <form action={createLootEntry} className="flex max-w-lg flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Nombre del ítem
           <input
             name="item_name"
@@ -34,7 +32,7 @@ export default async function NewLootPage() {
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Wowhead item ID (opcional)
           <input
             name="wowhead_item_id"
@@ -44,7 +42,7 @@ export default async function NewLootPage() {
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Personaje ganador
           <select name="character_id" required className="input">
             {characters?.map((c) => (
@@ -55,7 +53,7 @@ export default async function NewLootPage() {
           </select>
         </label>
 
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Raid (opcional)
           <select name="raid_event_id" className="input" defaultValue="">
             <option value="">— Sin asociar —</option>
@@ -67,12 +65,12 @@ export default async function NewLootPage() {
           </select>
         </label>
 
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Boss (opcional)
           <input name="boss_name" className="input" placeholder="Ej. The Lich King" />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm text-neutral-300">
+        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
           Notas (opcional)
           <textarea name="notes" className="input" rows={3} />
         </label>

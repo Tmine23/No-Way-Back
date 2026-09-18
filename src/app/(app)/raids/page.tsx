@@ -15,9 +15,7 @@ export default async function RaidsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold text-[var(--gold-soft)]">
-          Raids
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Raids</h1>
         {isOfficer(profile) && (
           <Link href="/raids/new" className="btn-primary text-sm">
             + Nueva raid
@@ -47,8 +45,8 @@ export default async function RaidsPage() {
                 </p>
               </div>
               <div className="text-right text-sm">
-                <p className="text-[var(--frost-soft)]">{confirmed} confirmados</p>
-                <p className="text-neutral-500">{RAID_STATUS_LABELS[raid.status]}</p>
+                <p className="font-mono text-[var(--accent-soft)]">{confirmed} confirmados</p>
+                <p className="text-[var(--text-faint)]">{RAID_STATUS_LABELS[raid.status]}</p>
               </div>
             </Link>
           );

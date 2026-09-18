@@ -168,6 +168,7 @@ export type Database = {
           discord_username: string
           guild_role: Database["public"]["Enums"]["guild_role"]
           id: string
+          known_as: string | null
         }
         Insert: {
           created_at?: string
@@ -175,6 +176,7 @@ export type Database = {
           discord_username: string
           guild_role?: Database["public"]["Enums"]["guild_role"]
           id: string
+          known_as?: string | null
         }
         Update: {
           created_at?: string
@@ -182,6 +184,7 @@ export type Database = {
           discord_username?: string
           guild_role?: Database["public"]["Enums"]["guild_role"]
           id?: string
+          known_as?: string | null
         }
         Relationships: []
       }

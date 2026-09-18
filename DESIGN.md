@@ -29,7 +29,7 @@ Restrained and purposeful only, per the product's own principle: transform/opaci
 
 ## Mark
 
-A minimal geometric monogram: a peak silhouette pierced by an ascending arrow, single-weight purple line art (`public/logo.svg`, also the favicon). Echoes the user's brand reference (peak + ascent motif) without reusing its character art or any third-party trademarked imagery. The user's original raster logo (`LogoNWB.jfif`) is the source-of-truth brand mark for external use (Discord, marketing) once a real transparent export is available; this SVG is the in-app mark sized for UI chrome.
+The guild's real logo (`LogoNWB.jfif`): a peak pierced by an ascending arrow rendered as a 3D purple badge, with a "NO WAY BACK" wordmark. The source file was a flattened JPEG export with its transparency checkerboard baked into the pixels; `public/logo-icon.png` (icon only, used in nav/favicon/login) and `public/logo-nwb.png` (full icon+wordmark lockup) were produced from it by detecting the checkerboard's achromatic signature and despeckling JPEG ringing at the edges, restoring real alpha transparency. An earlier from-scratch geometric placeholder mark was replaced once the real asset was usable.
 
 ## Process note
 

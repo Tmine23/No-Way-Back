@@ -35,7 +35,7 @@ export default function LoginPage() {
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       <div className="flex flex-col justify-center px-6 py-16 sm:px-12 lg:px-20">
         <motion.div initial="hidden" animate="show" custom={0} variants={fadeUp} className="flex items-center gap-2.5">
-          <Image src="/logo.svg" alt="" width={32} height={32} priority />
+          <Image src="/logo-icon.png" alt="" width={32} height={32} priority />
           <span className="text-sm font-medium text-[var(--text-muted)]">No Way Back</span>
         </motion.div>
 

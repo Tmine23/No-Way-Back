@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/auth";
+import { getCurrentProfile, isOfficer } from "@/lib/auth";
 import { RsvpControls } from "@/components/rsvp-controls";
+import { RosterBuilder } from "@/components/roster-builder";
 import { CLASS_COLORS, RSVP_LABELS } from "@/lib/wow";
 import type { Enums, Tables } from "@/types/database";
 
 type SignupWithCharacter = Tables<"raid_signups"> & {
   characters: Tables<"characters">;
 };
+
+const SECONDARY_STATUSES: Enums<"rsvp_status">[] = ["tentative", "bench", "absent"];
 
 export default async function RaidDetailPage({
   params,
@@ -76,8 +79,7 @@ export default async function RaidDetailPage({
         </div>
 
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium">Roster de la raid</h2>
-          {(Object.keys(grouped) as Enums<"rsvp_status">[]).map((status) => (
+          {SECONDARY_STATUSES.map((status) => (
             <div key={status}>
               <p className="mb-1 text-sm font-medium text-[var(--text-muted)]">
                 {RSVP_LABELS[status]} ({grouped[status].length})
@@ -100,6 +102,12 @@ export default async function RaidDetailPage({
           ))}
         </div>
       </div>
+
+      <RosterBuilder
+        raidEventId={id}
+        confirmed={grouped.confirmed}
+        canEdit={isOfficer(profile)}
+      />
     </div>
   );
 }

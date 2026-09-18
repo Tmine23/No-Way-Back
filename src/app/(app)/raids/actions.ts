@@ -50,3 +50,24 @@ export async function setSignup(
 
   revalidatePath(`/raids/${raidEventId}`);
 }
+
+export async function setRosterSlot(
+  raidEventId: string,
+  signupId: string,
+  inRoster: boolean,
+) {
+  const profile = await getCurrentProfile();
+  if (!isOfficer(profile)) {
+    throw new Error("Solo un Officer o Guild Master puede editar el roster final");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("raid_signups")
+    .update({ in_roster: inRoster })
+    .eq("id", signupId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/raids/${raidEventId}`);
+}

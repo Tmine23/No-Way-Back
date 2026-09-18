@@ -230,6 +230,7 @@ export type Database = {
         Row: {
           character_id: string
           id: string
+          in_roster: boolean
           raid_event_id: string
           signed_up_at: string
           status: Database["public"]["Enums"]["rsvp_status"]
@@ -237,6 +238,7 @@ export type Database = {
         Insert: {
           character_id: string
           id?: string
+          in_roster?: boolean
           raid_event_id: string
           signed_up_at?: string
           status?: Database["public"]["Enums"]["rsvp_status"]
@@ -244,6 +246,7 @@ export type Database = {
         Update: {
           character_id?: string
           id?: string
+          in_roster?: boolean
           raid_event_id?: string
           signed_up_at?: string
           status?: Database["public"]["Enums"]["rsvp_status"]

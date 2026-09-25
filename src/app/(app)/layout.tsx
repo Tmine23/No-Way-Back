@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile, isOfficer, isApproved } from "@/lib/auth";
+import { getCurrentProfile, isOfficer, isGuildMaster, isApproved } from "@/lib/auth";
 import { Nav } from "@/components/nav";
 import { NicknameModal } from "@/components/nickname-modal";
 import { ApplicationModal } from "@/components/application-modal";
@@ -29,7 +29,7 @@ export default async function AppLayout({
   if (profile && !isApproved(profile)) {
     const { data: application } = await supabase
       .from("applications")
-      .select("id")
+      .select("status")
       .eq("profile_id", profile.id)
       .maybeSingle();
 
@@ -37,12 +37,22 @@ export default async function AppLayout({
       return <ApplicationModal />;
     }
 
-    return <PendingApproval profile={profile} />;
+    return <PendingApproval profile={profile} status={application.status} />;
   }
+
+  const { count: unreadCount } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .is("read_at", null);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Nav profile={profile} isOfficer={isOfficer(profile)} />
+      <Nav
+        profile={profile}
+        isOfficer={isOfficer(profile)}
+        isGuildMaster={isGuildMaster(profile)}
+        unreadCount={unreadCount ?? 0}
+      />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         {children}
       </main>

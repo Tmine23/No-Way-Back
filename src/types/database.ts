@@ -12,42 +12,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      application_comments: {
+        Row: {
+          application_id: string
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          application_id: string
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          application_id?: string
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_comments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           applicant_type: Database["public"]["Enums"]["applicant_type"]
+          availability: string | null
           class: Database["public"]["Enums"]["wow_class"] | null
           created_at: string
           experience: string | null
           gearscore: number | null
           id: string
+          logs_url: string | null
           previous_guild: string | null
           previous_server: string | null
           profile_id: string
           spec: string | null
+          status: Database["public"]["Enums"]["application_status"]
+          updated_at: string
         }
         Insert: {
           applicant_type: Database["public"]["Enums"]["applicant_type"]
+          availability?: string | null
           class?: Database["public"]["Enums"]["wow_class"] | null
           created_at?: string
           experience?: string | null
           gearscore?: number | null
           id?: string
+          logs_url?: string | null
           previous_guild?: string | null
           previous_server?: string | null
           profile_id: string
           spec?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
         }
         Update: {
           applicant_type?: Database["public"]["Enums"]["applicant_type"]
+          availability?: string | null
           class?: Database["public"]["Enums"]["wow_class"] | null
           created_at?: string
           experience?: string | null
           gearscore?: number | null
           id?: string
+          logs_url?: string | null
           previous_guild?: string | null
           previous_server?: string | null
           profile_id?: string
           spec?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
         }
         Relationships: [
           {
@@ -99,13 +150,15 @@ export type Database = {
           armory_url: string | null
           class: Database["public"]["Enums"]["wow_class"]
           created_at: string
+          gearscore: number
           id: string
-          ilvl: number
           is_main: boolean
           name: string
           owner_id: string
           professions: string[]
           role: Database["public"]["Enums"]["character_role"]
+          role_secondary: Database["public"]["Enums"]["character_role"] | null
+          server_id: string
           spec_primary: string
           spec_secondary: string | null
           updated_at: string
@@ -114,13 +167,15 @@ export type Database = {
           armory_url?: string | null
           class: Database["public"]["Enums"]["wow_class"]
           created_at?: string
+          gearscore?: number
           id?: string
-          ilvl?: number
           is_main?: boolean
           name: string
           owner_id: string
           professions?: string[]
           role: Database["public"]["Enums"]["character_role"]
+          role_secondary?: Database["public"]["Enums"]["character_role"] | null
+          server_id: string
           spec_primary: string
           spec_secondary?: string | null
           updated_at?: string
@@ -129,13 +184,15 @@ export type Database = {
           armory_url?: string | null
           class?: Database["public"]["Enums"]["wow_class"]
           created_at?: string
+          gearscore?: number
           id?: string
-          ilvl?: number
           is_main?: boolean
           name?: string
           owner_id?: string
           professions?: string[]
           role?: Database["public"]["Enums"]["character_role"]
+          role_secondary?: Database["public"]["Enums"]["character_role"] | null
+          server_id?: string
           spec_primary?: string
           spec_secondary?: string | null
           updated_at?: string
@@ -146,6 +203,57 @@ export type Database = {
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "characters_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_settings: {
+        Row: {
+          active_season_id: string | null
+          discord_guild_id: string | null
+          discord_raider_role_id: string | null
+          guild_name: string
+          id: number
+          recruitment_message: string | null
+          recruitment_open: boolean
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          active_season_id?: string | null
+          discord_guild_id?: string | null
+          discord_raider_role_id?: string | null
+          guild_name?: string
+          id?: number
+          recruitment_message?: string | null
+          recruitment_open?: boolean
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          active_season_id?: string | null
+          discord_guild_id?: string | null
+          discord_raider_role_id?: string | null
+          guild_name?: string
+          id?: number
+          recruitment_message?: string | null
+          recruitment_open?: boolean
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_settings_active_season_id_fkey"
+            columns: ["active_season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -208,14 +316,53 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          profile_id: string
+          read_at: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          profile_id: string
+          read_at?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          profile_id?: string
+          read_at?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
           discord_avatar_url: string | null
           discord_id: string | null
           discord_username: string
-          guild_role: Database["public"]["Enums"]["guild_role"]
+          guild_role: Database["public"]["Enums"]["guild_rank"]
           id: string
+          is_trial: boolean
           known_as: string | null
         }
         Insert: {
@@ -223,8 +370,9 @@ export type Database = {
           discord_avatar_url?: string | null
           discord_id?: string | null
           discord_username: string
-          guild_role?: Database["public"]["Enums"]["guild_role"]
+          guild_role?: Database["public"]["Enums"]["guild_rank"]
           id: string
+          is_trial?: boolean
           known_as?: string | null
         }
         Update: {
@@ -232,11 +380,47 @@ export type Database = {
           discord_avatar_url?: string | null
           discord_id?: string | null
           discord_username?: string
-          guild_role?: Database["public"]["Enums"]["guild_role"]
+          guild_role?: Database["public"]["Enums"]["guild_rank"]
           id?: string
+          is_trial?: boolean
           known_as?: string | null
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          profile_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          profile_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       raid_events: {
         Row: {
@@ -282,6 +466,33 @@ export type Database = {
           },
         ]
       }
+      raid_schedule: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          label: string | null
+          start_time: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          label?: string | null
+          start_time: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          label?: string | null
+          start_time?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
       raid_signups: {
         Row: {
           character_id: string
@@ -324,19 +535,109 @@ export type Database = {
           },
         ]
       }
+      recruitment_needs: {
+        Row: {
+          class: Database["public"]["Enums"]["wow_class"]
+          id: string
+          note: string | null
+          priority: Database["public"]["Enums"]["recruitment_priority"]
+          spec: string
+        }
+        Insert: {
+          class: Database["public"]["Enums"]["wow_class"]
+          id?: string
+          note?: string | null
+          priority?: Database["public"]["Enums"]["recruitment_priority"]
+          spec: string
+        }
+        Update: {
+          class?: Database["public"]["Enums"]["wow_class"]
+          id?: string
+          note?: string | null
+          priority?: Database["public"]["Enums"]["recruitment_priority"]
+          spec?: string
+        }
+        Relationships: []
+      }
+      seasons: {
+        Row: {
+          bis_phase: Database["public"]["Enums"]["bis_phase"]
+          created_at: string
+          id: string
+          name: string
+          reset_time: string
+          reset_weekday: number
+          server_id: string
+          started_on: string
+        }
+        Insert: {
+          bis_phase?: Database["public"]["Enums"]["bis_phase"]
+          created_at?: string
+          id?: string
+          name: string
+          reset_time?: string
+          reset_weekday?: number
+          server_id: string
+          started_on?: string
+        }
+        Update: {
+          bis_phase?: Database["public"]["Enums"]["bis_phase"]
+          created_at?: string
+          id?: string
+          name?: string
+          reset_time?: string
+          reset_weekday?: number
+          server_id?: string
+          started_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasons_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      servers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          uwu_server_key: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          uwu_server_key?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          uwu_server_key?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      is_approved: { Args: { uid: string }; Returns: boolean }
       is_guild_master: { Args: { uid: string }; Returns: boolean }
       is_officer: { Args: { uid: string }; Returns: boolean }
     }
     Enums: {
       applicant_type: "new_player" | "returning_player"
+      application_status: "new" | "interview" | "trial" | "accepted" | "rejected"
+      bis_phase: "pre_raid" | "t7" | "t8" | "t9" | "t10"
       character_role: "tank" | "healer" | "dps"
-      guild_role: "officer" | "raider" | "trial" | "applicant" | "guild_master"
+      guild_rank: "guild_master" | "officer" | "raider" | "applicant"
       raid_event_status: "scheduled" | "completed" | "cancelled"
+      recruitment_priority: "high" | "medium" | "closed"
       rsvp_status: "confirmed" | "tentative" | "absent" | "bench"
       wow_class:
         | "warrior"

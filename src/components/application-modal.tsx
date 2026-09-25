@@ -100,9 +100,20 @@ export function ApplicationModal() {
                   </label>
                 </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
+                    Gearscore (opcional)
+                    <input name="gearscore" type="number" min={0} className="input" />
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
+                    Logs o armory (opcional)
+                    <input name="logs_url" type="url" className="input" placeholder="https://" />
+                  </label>
+                </div>
+
                 <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
-                  Gearscore aproximado (opcional)
-                  <input name="gearscore" type="number" min={0} className="input" />
+                  ¿Qué días y horarios puedes raidear?
+                  <input name="availability" required className="input" placeholder="Ej. Mar/Mié/Jue 21:00 hora Bolivia" />
                 </label>
 
                 <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">

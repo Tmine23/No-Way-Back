@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { notifyOfficers } from "@/lib/notify";
 import type { Enums } from "@/types/database";
 
 export async function setKnownAs(
@@ -52,9 +53,24 @@ export async function submitApplication(
     spec: (formData.get("spec") as string) || null,
     gearscore: gearscoreRaw ? Number(gearscoreRaw) : null,
     experience: (formData.get("experience") as string) || null,
+    availability: (formData.get("availability") as string) || null,
+    logs_url: (formData.get("logs_url") as string) || null,
   });
 
   if (error) return { error: error.message };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("known_as, discord_username")
+    .eq("id", user.id)
+    .single();
+  const name = profile?.known_as || profile?.discord_username || "Alguien";
+
+  await notifyOfficers({
+    title: "Nueva postulación",
+    body: `${name} quiere unirse al guild.`,
+    url: "/solicitudes",
+  }).catch(() => undefined);
 
   revalidatePath("/", "layout");
   return { error: null };

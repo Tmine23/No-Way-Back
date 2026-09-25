@@ -39,6 +39,60 @@ export const CLASS_COLORS: Record<Enums<"wow_class">, string> = {
   druid: "#FF7D0A",
 };
 
+export const CLASS_SPECS: Record<Enums<"wow_class">, { name: string; role: Enums<"character_role"> }[]> = {
+  warrior: [
+    { name: "Arms", role: "dps" },
+    { name: "Fury", role: "dps" },
+    { name: "Protection", role: "tank" },
+  ],
+  paladin: [
+    { name: "Holy", role: "healer" },
+    { name: "Protection", role: "tank" },
+    { name: "Retribution", role: "dps" },
+  ],
+  hunter: [
+    { name: "Beast Mastery", role: "dps" },
+    { name: "Marksmanship", role: "dps" },
+    { name: "Survival", role: "dps" },
+  ],
+  rogue: [
+    { name: "Assassination", role: "dps" },
+    { name: "Combat", role: "dps" },
+    { name: "Subtlety", role: "dps" },
+  ],
+  priest: [
+    { name: "Discipline", role: "healer" },
+    { name: "Holy", role: "healer" },
+    { name: "Shadow", role: "dps" },
+  ],
+  death_knight: [
+    { name: "Blood", role: "tank" },
+    { name: "Frost", role: "dps" },
+    { name: "Unholy", role: "dps" },
+  ],
+  shaman: [
+    { name: "Elemental", role: "dps" },
+    { name: "Enhancement", role: "dps" },
+    { name: "Restoration", role: "healer" },
+  ],
+  mage: [
+    { name: "Arcane", role: "dps" },
+    { name: "Fire", role: "dps" },
+    { name: "Frost", role: "dps" },
+  ],
+  warlock: [
+    { name: "Affliction", role: "dps" },
+    { name: "Demonology", role: "dps" },
+    { name: "Destruction", role: "dps" },
+  ],
+  druid: [
+    { name: "Balance", role: "dps" },
+    { name: "Feral (Tank)", role: "tank" },
+    { name: "Feral (DPS)", role: "dps" },
+    { name: "Restoration", role: "healer" },
+  ],
+};
+
 export const ROLE_LABELS: Record<Enums<"character_role">, string> = {
   tank: "Tank",
   healer: "Healer",
@@ -55,20 +109,70 @@ export const RSVP_LABELS: Record<Enums<"rsvp_status">, string> = {
 export const GROUP_SIZE = 5;
 export const BENCH_SIZE = 5;
 
-export const GUILD_ROLE_LABELS: Record<Enums<"guild_role">, string> = {
+export const GUILD_ROLE_LABELS: Record<Enums<"guild_rank">, string> = {
   guild_master: "Guild Master",
-  officer: "Officer",
-  raider: "Raider",
-  trial: "Trial",
-  applicant: "Applicant",
+  officer: "Oficial",
+  raider: "No Way Back",
+  applicant: "Aspirante",
 };
 
-export const GUILD_ROLE_ORDER: Enums<"guild_role">[] = [
+export const GUILD_ROLE_ORDER: Enums<"guild_rank">[] = [
   "guild_master",
   "officer",
   "raider",
-  "trial",
   "applicant",
+];
+
+export const APPLICATION_STATUS_LABELS: Record<Enums<"application_status">, string> = {
+  new: "Nuevo",
+  interview: "Entrevista",
+  trial: "Trial",
+  accepted: "Aceptado",
+  rejected: "Rechazado",
+};
+
+export const APPLICATION_STATUS_ORDER: Enums<"application_status">[] = [
+  "new",
+  "interview",
+  "trial",
+  "accepted",
+  "rejected",
+];
+
+export const RECRUITMENT_PRIORITY_LABELS: Record<Enums<"recruitment_priority">, string> = {
+  high: "Prioridad alta",
+  medium: "Buscamos",
+  closed: "Cerrado",
+};
+
+export const BIS_PHASE_LABELS: Record<Enums<"bis_phase">, string> = {
+  pre_raid: "Pre-raid",
+  t7: "T7 · Naxxramas",
+  t8: "T8 · Ulduar",
+  t9: "T9 · Prueba del Cruzado",
+  t10: "T10 · Ciudadela de la Corona de Hielo",
+};
+
+export const WEEKDAY_LABELS = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
+
+export const TIMEZONE_OPTIONS = [
+  { value: "America/La_Paz", label: "Bolivia (La Paz)" },
+  { value: "America/Bogota", label: "Colombia (Bogotá)" },
+  { value: "America/Lima", label: "Perú (Lima)" },
+  { value: "America/Santiago", label: "Chile (Santiago)" },
+  { value: "America/Havana", label: "Cuba (La Habana)" },
+  { value: "America/Mexico_City", label: "México (CDMX)" },
+  { value: "America/Argentina/Buenos_Aires", label: "Argentina (Buenos Aires)" },
+  { value: "America/Caracas", label: "Venezuela (Caracas)" },
+  { value: "Europe/Madrid", label: "España (Madrid)" },
 ];
 
 export const RAID_STATUS_LABELS: Record<Enums<"raid_event_status">, string> = {

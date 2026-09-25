@@ -1,61 +1,60 @@
 "use client";
 
 import { useTransition } from "react";
-import { setMemberTrial, updateMemberRole } from "@/app/(app)/members/actions";
-import { GUILD_ROLE_LABELS } from "@/lib/wow";
-import type { Enums } from "@/types/database";
+import { updateMemberRank, type MemberRank } from "@/app/(app)/members/actions";
+
+const RANK_LABELS: Record<MemberRank, string> = {
+  guild_master: "Guild Master",
+  officer: "Oficial",
+  raider: "No Way Back",
+  trial: "Trial",
+  applicant: "Sin acceso (Aspirante)",
+};
 
 export function RoleSelect({
   memberId,
-  currentRole,
-  assignableRoles,
+  currentRank,
+  assignableRanks,
   disabled,
   label,
 }: {
   label: string;
   memberId: string;
-  currentRole: Enums<"guild_rank">;
-  assignableRoles: Enums<"guild_rank">[];
+  currentRank: MemberRank;
+  assignableRanks: MemberRank[];
   disabled: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
-  const options = assignableRoles.includes(currentRole)
-    ? assignableRoles
-    : [currentRole, ...assignableRoles];
+  const options = assignableRanks.includes(currentRank) ? assignableRanks : [currentRank, ...assignableRanks];
 
   return (
     <select
       aria-label={label}
-      className="input min-h-10 text-sm"
+      className="input min-h-11 text-base"
       disabled={disabled || isPending}
-      defaultValue={currentRole}
-      onChange={(e) =>
-        startTransition(() =>
-          updateMemberRole(memberId, e.target.value as Enums<"guild_rank">),
-        )
-      }
+      value={currentRank}
+      onChange={(e) => startTransition(() => updateMemberRank(memberId, e.target.value as MemberRank))}
     >
-      {options.map((role) => (
-        <option key={role} value={role}>
-          {GUILD_ROLE_LABELS[role]}
+      {options.map((rank) => (
+        <option key={rank} value={rank}>
+          {RANK_LABELS[rank]}
         </option>
       ))}
     </select>
   );
 }
 
-export function TrialToggle({ memberId, isTrial }: { memberId: string; isTrial: boolean }) {
+export function ConfirmTrialButton({ memberId, name }: { memberId: string; name: string }) {
   const [isPending, startTransition] = useTransition();
   return (
-    <label className="flex min-h-10 cursor-pointer items-center gap-1.5 text-sm text-[var(--text-muted)]">
-      <input
-        type="checkbox"
-        defaultChecked={isTrial}
-        disabled={isPending}
-        onChange={(e) => startTransition(() => setMemberTrial(memberId, e.target.checked))}
-        className="size-4 accent-[var(--accent)]"
-      />
-      Trial
-    </label>
+    <button
+      type="button"
+      onClick={() => startTransition(() => updateMemberRank(memberId, "raider"))}
+      disabled={isPending}
+      aria-label={`Confirmar a ${name} como No Way Back`}
+      className="btn-primary min-h-11 px-4 text-base"
+    >
+      {isPending ? "Guardando…" : "Ya es No Way Back"}
+    </button>
   );
 }

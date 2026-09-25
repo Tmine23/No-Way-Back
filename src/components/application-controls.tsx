@@ -1,40 +1,69 @@
 "use client";
 
-import { useRef, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import {
   addApplicationComment,
+  decideApplication,
   deleteRecruitmentNeed,
-  setApplicationStatus,
 } from "@/app/(app)/solicitudes/actions";
-import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_ORDER } from "@/lib/wow";
-import type { Enums } from "@/types/database";
 
-export function ApplicationStatusSelect({
-  applicationId,
-  status,
-}: {
-  applicationId: string;
-  status: Enums<"application_status">;
-}) {
+export function ApplicationDecision({ applicationId, name }: { applicationId: string; name: string }) {
+  const [isPending, startTransition] = useTransition();
+  const [confirming, setConfirming] = useState<"accept" | "reject" | null>(null);
+
+  function decide(decision: "accept" | "reject") {
+    startTransition(async () => {
+      await decideApplication(applicationId, decision);
+      setConfirming(null);
+    });
+  }
+
+  if (confirming) {
+    return (
+      <div className="flex flex-wrap items-center gap-2 rounded-lg bg-[var(--surface-2)] p-3">
+        <p className="text-base font-medium">
+          {confirming === "accept" ? `¿Aceptar a ${name} como Trial?` : `¿Rechazar a ${name}?`}
+        </p>
+        <div className="ml-auto flex gap-2">
+          <button type="button" onClick={() => setConfirming(null)} disabled={isPending} className="btn-ghost min-h-11 px-4 text-base">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => decide(confirming)}
+            disabled={isPending}
+            className={`${confirming === "accept" ? "btn-primary" : "btn-danger"} min-h-11 px-5 text-base`}
+          >
+            {isPending ? "Guardando…" : confirming === "accept" ? "Sí, aceptar" : "Sí, rechazar"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:flex">
+      <button type="button" onClick={() => setConfirming("accept")} className="btn-primary min-h-12 px-6 text-base">
+        Aceptar
+      </button>
+      <button type="button" onClick={() => setConfirming("reject")} className="btn-secondary min-h-12 px-6 text-base">
+        Rechazar
+      </button>
+    </div>
+  );
+}
+
+export function ReopenApplicationButton({ applicationId }: { applicationId: string }) {
   const [isPending, startTransition] = useTransition();
   return (
-    <select
-      aria-label="Estado de la postulación"
-      className="input min-h-10 text-sm"
+    <button
+      type="button"
+      onClick={() => startTransition(() => decideApplication(applicationId, "reopen"))}
       disabled={isPending}
-      defaultValue={status}
-      onChange={(e) =>
-        startTransition(() =>
-          setApplicationStatus(applicationId, e.target.value as Enums<"application_status">),
-        )
-      }
+      className="btn-ghost min-h-10 px-3 text-sm"
     >
-      {APPLICATION_STATUS_ORDER.map((s) => (
-        <option key={s} value={s}>
-          {APPLICATION_STATUS_LABELS[s]}
-        </option>
-      ))}
-    </select>
+      {isPending ? "Reabriendo…" : "Reabrir"}
+    </button>
   );
 }
 

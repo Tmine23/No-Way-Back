@@ -36,6 +36,11 @@ export function Nav({
   unreadCount: number;
 }) {
   const pathname = usePathname();
+  const rankLabel = profile
+    ? profile.guild_role === "raider" && profile.is_trial
+      ? "Trial"
+      : GUILD_ROLE_LABELS[profile.guild_role]
+    : "";
   // The sheet belongs to the page it was opened on, so navigating closes it.
   const [openedOn, setOpenedOn] = useState<string | null>(null);
   const moreOpen = openedOn === pathname;
@@ -120,12 +125,11 @@ export function Nav({
                 <div className="hidden leading-tight sm:block">
                   <p className="font-medium text-[var(--text)]">{displayName(profile)}</p>
                   <p className="text-xs text-[var(--text-faint)]">
-                    {GUILD_ROLE_LABELS[profile.guild_role]}
-                    {profile.is_trial && " · Trial"}
+                    {rankLabel}
                   </p>
                 </div>
                 <span className={`badge sm:hidden ${ROLE_BADGE_STYLES[profile.guild_role]}`}>
-                  {GUILD_ROLE_LABELS[profile.guild_role]}
+                  {rankLabel}
                 </span>
               </div>
             )}

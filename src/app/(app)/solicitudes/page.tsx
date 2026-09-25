@@ -5,16 +5,17 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer, displayName } from "@/lib/auth";
 import { saveRecruitmentNeed } from "@/app/(app)/solicitudes/actions";
 import {
-  ApplicationStatusSelect,
+  ApplicationDecision,
   CommentForm,
   DeleteNeedButton,
+  ReopenApplicationButton,
 } from "@/components/application-controls";
+import { LiveRefresh } from "@/components/live-refresh";
 import { FadeIn } from "@/components/fade-in";
 import { LocalDate } from "@/components/local-time";
 import { PageHeader } from "@/components/page-header";
 import {
   APPLICANT_TYPE_LABELS,
-  APPLICATION_STATUS_LABELS,
   CLASS_COLORS,
   CLASS_LABELS,
   RECRUITMENT_PRIORITY_LABELS,
@@ -30,8 +31,8 @@ type CommentWithAuthor = Tables<"application_comments"> & {
   profiles: Pick<Tables<"profiles">, "known_as" | "discord_username">;
 };
 
-const ACTIVE: Enums<"application_status">[] = ["new", "interview", "trial"];
-const CLOSED: Enums<"application_status">[] = ["accepted", "rejected"];
+// Older applications may still carry the retired interview/trial states: they count as pending.
+const PENDING: Enums<"application_status">[] = ["new", "interview", "trial"];
 
 export default async function ApplicationsPage() {
   const viewer = await getCurrentProfile();
@@ -56,11 +57,12 @@ export default async function ApplicationsPage() {
     commentsByApp.set(c.application_id, [...(commentsByApp.get(c.application_id) ?? []), c]);
   }
 
-  const active = typed.filter((a) => ACTIVE.includes(a.status));
-  const closed = typed.filter((a) => CLOSED.includes(a.status));
+  const active = typed.filter((a) => PENDING.includes(a.status));
+  const closed = typed.filter((a) => !PENDING.includes(a.status));
 
   return (
     <div className="flex flex-col gap-10">
+      <LiveRefresh tables={[{ table: "applications" }]} />
       <FadeIn>
         <PageHeader
           title="Reclutamiento"
@@ -75,11 +77,11 @@ export default async function ApplicationsPage() {
 
       <section className="flex flex-col gap-3">
         <h2 className="display flex items-baseline gap-3 text-3xl font-bold uppercase">
-          En proceso
+          Por revisar
           <span className="tabular text-xl text-[var(--text-faint)]">{active.length}</span>
         </h2>
         {active.length === 0 && (
-          <p className="text-sm text-[var(--text-muted)]">No hay postulaciones en proceso.</p>
+          <p className="text-base text-[var(--text-muted)]">No hay postulaciones por revisar. Si llega una nueva, aparece aquí sola.</p>
         )}
         {active.map((a) => (
           <ApplicationCard key={a.id} application={a} comments={commentsByApp.get(a.id) ?? []} />
@@ -129,14 +131,22 @@ export default async function ApplicationsPage() {
 
       {closed.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="display text-3xl font-bold uppercase">Cerradas</h2>
+          <h2 className="display text-3xl font-bold uppercase">Ya revisadas</h2>
           <div className="card divide-y divide-[var(--border)]">
             {closed.map((a) => (
-              <div key={a.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
-                <span>{displayName(a.profiles)}</span>
+              <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-base">
+                <span className="font-medium">{displayName(a.profiles)}</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-[var(--text-muted)]">{APPLICATION_STATUS_LABELS[a.status]}</span>
-                  <ApplicationStatusSelect applicationId={a.id} status={a.status} />
+                  <span
+                    className={`badge ${
+                      a.status === "rejected"
+                        ? "bg-[var(--danger-dim)] text-[var(--danger)]"
+                        : "bg-[var(--accent-dim)] text-[var(--accent-soft)]"
+                    }`}
+                  >
+                    {a.status === "rejected" ? "Rechazado" : "Aceptado"}
+                  </span>
+                  <ReopenApplicationButton applicationId={a.id} />
                 </div>
               </div>
             ))}
@@ -156,7 +166,7 @@ function ApplicationCard({
 }) {
   return (
     <article className="card flex flex-col gap-4 p-5">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           {a.profiles.discord_avatar_url ? (
             <Image src={a.profiles.discord_avatar_url} alt="" width={36} height={36} className="rounded-full" />
@@ -165,13 +175,13 @@ function ApplicationCard({
           )}
           <div>
             <p className="display text-2xl font-bold uppercase">{displayName(a.profiles)}</p>
-            <p className="text-xs text-[var(--text-faint)]">
+            <p className="text-sm text-[var(--text-muted)]">
               {a.profiles.discord_username} · {APPLICANT_TYPE_LABELS[a.applicant_type]} ·{" "}
               <LocalDate iso={a.created_at} className="tabular" />
             </p>
           </div>
         </div>
-        <ApplicationStatusSelect applicationId={a.id} status={a.status} />
+        <ApplicationDecision applicationId={a.id} name={displayName(a.profiles)} />
       </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-[var(--border)] pt-3 text-sm sm:grid-cols-4">

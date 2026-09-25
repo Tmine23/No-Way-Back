@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer } from "@/lib/auth";
 import { RaidInvitation } from "@/components/raid-invitation";
+import { LiveRefresh } from "@/components/live-refresh";
 import { GROUP_SIZE } from "@/lib/wow";
 import { RaidComposition } from "@/components/raid-composition";
 import { AnnounceRaidButton } from "@/components/announce-raid-button";
@@ -47,6 +48,7 @@ export default async function RaidDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="flex flex-col gap-8">
+      <LiveRefresh tables={[{ table: "raid_signups", filter: `raid_event_id=eq.${id}` }]} />
       <FadeIn className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="display text-5xl font-bold uppercase sm:text-6xl">{raid.title}</h1>

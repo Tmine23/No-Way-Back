@@ -3,28 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer } from "@/lib/auth";
-import { notify, syncDiscordRole } from "@/lib/notify";
+import { notifySafely, syncDiscordRole } from "@/lib/notify";
 import type { Enums } from "@/types/database";
-
-const APPLICANT_MESSAGES: Record<Enums<"application_status">, { title: string; body: string } | null> = {
-  new: null,
-  interview: {
-    title: "Tu postulación avanzó",
-    body: "Estás en etapa de entrevista. Un Oficial te va a contactar por Discord.",
-  },
-  trial: {
-    title: "¡Bienvenido a No Way Back!",
-    body: "Entraste como trial. Ya tienes acceso al guild hub: registra tus personajes.",
-  },
-  accepted: {
-    title: "¡Bienvenido a No Way Back!",
-    body: "Tu postulación fue aceptada. Ya tienes acceso al guild hub: registra tus personajes.",
-  },
-  rejected: {
-    title: "Resultado de tu postulación",
-    body: "Esta vez tu postulación no fue aceptada. Gracias por tu interés en la guild.",
-  },
-};
 
 async function requireOfficer() {
   const profile = await getCurrentProfile();
@@ -32,13 +12,15 @@ async function requireOfficer() {
   return profile!;
 }
 
-export async function setApplicationStatus(
-  applicationId: string,
-  status: Enums<"application_status">,
-) {
+/**
+ * Accepting lets the player in right away as a Trial (raider rank, trial flag on).
+ * Officers later confirm them as No Way Back from Miembros.
+ */
+export async function decideApplication(applicationId: string, decision: "accept" | "reject" | "reopen") {
   await requireOfficer();
   const supabase = await createClient();
 
+  const status = decision === "accept" ? "accepted" : decision === "reject" ? "rejected" : "new";
   const { data: application, error } = await supabase
     .from("applications")
     .update({ status, updated_at: new Date().toISOString() })
@@ -47,24 +29,30 @@ export async function setApplicationStatus(
     .single();
   if (error) throw new Error(error.message);
 
-  const joined = status === "trial" || status === "accepted";
   const { error: profileError } = await supabase
     .from("profiles")
-    .update({
-      guild_role: joined ? "raider" : "applicant",
-      is_trial: status === "trial",
-    })
+    .update(decision === "accept" ? { guild_role: "raider", is_trial: true } : { guild_role: "applicant", is_trial: false })
     .eq("id", application.profile_id);
   if (profileError) throw new Error(profileError.message);
 
   await syncDiscordRole(application.profile_id).catch(() => undefined);
 
-  const message = APPLICANT_MESSAGES[status];
-  if (message) {
-    await notify([application.profile_id], { ...message, url: "/" }).catch(() => undefined);
+  if (decision === "accept") {
+    await notifySafely([application.profile_id], {
+      title: "¡Bienvenido a No Way Back!",
+      body: "Entraste como Trial. Ya puedes usar la app: registra tus personajes.",
+      url: "/personajes/nuevo",
+    });
+  } else if (decision === "reject") {
+    await notifySafely([application.profile_id], {
+      title: "Resultado de tu postulación",
+      body: "Esta vez tu postulación no fue aceptada. Gracias por tu interés en la guild.",
+      url: "/",
+    });
   }
 
   revalidatePath("/solicitudes");
+  revalidatePath("/members");
 }
 
 export async function addApplicationComment(applicationId: string, body: string) {

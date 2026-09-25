@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer, isGuildMaster, isApproved } from "@/lib/auth";
 import { Nav } from "@/components/nav";
+import { LiveRefresh } from "@/components/live-refresh";
 import { NicknameModal } from "@/components/nickname-modal";
 import { ApplicationModal } from "@/components/application-modal";
 import { PendingApproval } from "@/components/pending-approval";
@@ -52,6 +53,12 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <LiveRefresh
+        tables={[
+          { table: "notifications", filter: `profile_id=eq.${profile.id}` },
+          { table: "profiles", filter: `id=eq.${profile.id}` },
+        ]}
+      />
       <Nav
         profile={profile}
         isOfficer={isOfficer(profile)}

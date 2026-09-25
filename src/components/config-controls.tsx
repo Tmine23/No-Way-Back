@@ -15,7 +15,7 @@ export function DeleteScheduleButton({ id }: { id: string }) {
     <button
       onClick={() => startTransition(() => deleteScheduleRow(id))}
       disabled={isPending}
-      className="text-xs text-[var(--text-faint)] hover:text-[var(--danger)]"
+      className="btn-ghost min-h-9 px-2 text-xs"
     >
       Quitar
     </button>
@@ -28,7 +28,7 @@ export function ActivateSeasonButton({ id }: { id: string }) {
     <button
       onClick={() => startTransition(() => activateSeason(id))}
       disabled={isPending}
-      className="btn-secondary text-xs disabled:opacity-60"
+      className="btn-secondary min-h-9 text-xs"
     >
       Activar
     </button>
@@ -39,7 +39,8 @@ export function PhaseSelect({ seasonId, phase }: { seasonId: string; phase: Enum
   const [isPending, startTransition] = useTransition();
   return (
     <select
-      className="input text-sm"
+      aria-label="Fase de BiS"
+      className="input min-h-10 text-sm"
       disabled={isPending}
       defaultValue={phase}
       onChange={(e) =>

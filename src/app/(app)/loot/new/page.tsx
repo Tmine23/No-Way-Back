@@ -1,84 +1,52 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile, isOfficer } from "@/lib/auth";
-import { createLootEntry } from "@/app/(app)/loot/actions";
+import { getCurrentProfile, isOfficer, displayName } from "@/lib/auth";
+import { LootForm, type LootRaidOption } from "@/components/loot-form";
+import { PageHeader } from "@/components/page-header";
 
 export default async function NewLootPage() {
   const profile = await getCurrentProfile();
   if (!isOfficer(profile)) redirect("/loot");
 
   const supabase = await createClient();
-  const [{ data: characters }, { data: raids }] = await Promise.all([
-    supabase.from("characters").select("id, name").order("name"),
+  const [{ data: characters }, { data: raids }, { data: settings }] = await Promise.all([
+    supabase.from("characters").select("id, name, class, spec_primary, profiles(known_as, discord_username)").order("name"),
     supabase
       .from("raid_events")
-      .select("id, title")
+      .select("id, title, scheduled_at, raid_size, raid_signups(character_id, slot_index)")
       .order("scheduled_at", { ascending: false })
-      .limit(20),
+      .limit(15),
+    supabase.from("guild_settings").select("timezone").single(),
   ]);
 
+  const zone = settings?.timezone ?? "America/La_Paz";
+  const raidOptions: LootRaidOption[] = (raids ?? []).map((r) => ({
+    id: r.id,
+    label: `${r.title} · ${new Date(r.scheduled_at).toLocaleDateString("es-MX", {
+      timeZone: zone,
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    })}`,
+    size: r.raid_size === 10 ? 10 : 25,
+    characterIds: (r.raid_signups ?? [])
+      .filter((s) => s.slot_index !== null && s.slot_index < r.raid_size)
+      .map((s) => s.character_id),
+  }));
+
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Registrar ítem</h1>
-
-      <form action={createLootEntry} className="flex max-w-lg flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
-          Nombre del ítem
-          <input
-            name="item_name"
-            required
-            className="input"
-            placeholder="Ej. Death's Verdict"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
-          Wowhead item ID (opcional)
-          <input
-            name="wowhead_item_id"
-            type="number"
-            className="input"
-            placeholder="Ej. 50783"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
-          Personaje ganador
-          <select name="character_id" required className="input">
-            {characters?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
-          Raid (opcional)
-          <select name="raid_event_id" className="input" defaultValue="">
-            <option value="">— Sin asociar —</option>
-            {raids?.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.title}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
-          Boss (opcional)
-          <input name="boss_name" className="input" placeholder="Ej. The Lich King" />
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
-          Notas (opcional)
-          <textarea name="notes" className="input" rows={3} />
-        </label>
-
-        <button type="submit" className="btn-primary mt-2">
-          Registrar
-        </button>
-      </form>
+    <div className="flex flex-col gap-8">
+      <PageHeader title="Registrar loot" description="Elige el boss, marca lo que cayó y a quién se lo dio el loot council." />
+      <LootForm
+        raids={raidOptions}
+        characters={(characters ?? []).map((c) => ({
+          id: c.id,
+          name: c.name,
+          class: c.class,
+          spec: c.spec_primary,
+          owner: c.profiles ? displayName(c.profiles as { known_as: string | null; discord_username: string }) : "Sin dueño",
+        }))}
+      />
     </div>
   );
 }

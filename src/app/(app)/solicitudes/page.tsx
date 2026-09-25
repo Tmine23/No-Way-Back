@@ -9,6 +9,9 @@ import {
   CommentForm,
   DeleteNeedButton,
 } from "@/components/application-controls";
+import { FadeIn } from "@/components/fade-in";
+import { LocalDate } from "@/components/local-time";
+import { PageHeader } from "@/components/page-header";
 import {
   APPLICANT_TYPE_LABELS,
   APPLICATION_STATUS_LABELS,
@@ -18,6 +21,7 @@ import {
   WOW_CLASSES,
 } from "@/lib/wow";
 import type { Enums, Tables } from "@/types/database";
+import { SubmitButton } from "@/components/submit-button";
 
 type ApplicationWithProfile = Tables<"applications"> & {
   profiles: Pick<Tables<"profiles">, "known_as" | "discord_username" | "discord_avatar_url">;
@@ -57,22 +61,22 @@ export default async function ApplicationsPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Reclutamiento</h1>
-          <p className="text-[var(--text-muted)]">
-            Postulaciones y clases que busca el guild.
-          </p>
-        </div>
-        <Link href="/reclutamiento" className="btn-secondary text-sm" target="_blank">
-          Ver página pública
-        </Link>
-      </div>
+      <FadeIn>
+        <PageHeader
+          title="Reclutamiento"
+          description="Postulaciones y clases que busca la guild."
+          actions={
+            <Link href="/reclutamiento" className="btn-secondary" target="_blank">
+              Ver página pública
+            </Link>
+          }
+        />
+      </FadeIn>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-medium">
-          En proceso{" "}
-          <span className="font-mono text-sm text-[var(--accent-soft)]">({active.length})</span>
+        <h2 className="display flex items-baseline gap-3 text-3xl font-bold uppercase">
+          En proceso
+          <span className="tabular text-xl text-[var(--text-faint)]">{active.length}</span>
         </h2>
         {active.length === 0 && (
           <p className="text-sm text-[var(--text-muted)]">No hay postulaciones en proceso.</p>
@@ -83,27 +87,27 @@ export default async function ApplicationsPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-medium">Qué buscamos</h2>
+        <h2 className="display text-3xl font-bold uppercase">Qué buscamos</h2>
         <form action={saveRecruitmentNeed} className="card grid grid-cols-2 gap-3 p-4 sm:grid-cols-5">
-          <select name="class" required className="input text-sm">
+          <select name="class" required aria-label="Clase" className="input text-sm">
             {WOW_CLASSES.map((c) => (
               <option key={c} value={c}>
                 {CLASS_LABELS[c]}
               </option>
             ))}
           </select>
-          <input name="spec" required className="input text-sm" placeholder="Spec (ej. Holy)" />
-          <select name="priority" className="input text-sm" defaultValue="medium">
+          <input name="spec" required aria-label="Spec" autoComplete="off" className="input text-sm" placeholder="Spec: Holy…" />
+          <select name="priority" aria-label="Prioridad" className="input text-sm" defaultValue="medium">
             {(Object.keys(RECRUITMENT_PRIORITY_LABELS) as Enums<"recruitment_priority">[]).map((p) => (
               <option key={p} value={p}>
                 {RECRUITMENT_PRIORITY_LABELS[p]}
               </option>
             ))}
           </select>
-          <input name="note" className="input text-sm" placeholder="Nota (opcional)" />
-          <button type="submit" className="btn-primary text-sm">
-            Guardar
-          </button>
+          <input name="note" aria-label="Nota" autoComplete="off" className="input text-sm" placeholder="Nota (opcional)" />
+          <SubmitButton>
+            Agregar
+          </SubmitButton>
         </form>
         {needs && needs.length > 0 && (
           <div className="card divide-y divide-[var(--border)]">
@@ -125,7 +129,7 @@ export default async function ApplicationsPage() {
 
       {closed.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="font-medium">Cerradas</h2>
+          <h2 className="display text-3xl font-bold uppercase">Cerradas</h2>
           <div className="card divide-y divide-[var(--border)]">
             {closed.map((a) => (
               <div key={a.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
@@ -151,7 +155,7 @@ function ApplicationCard({
   comments: CommentWithAuthor[];
 }) {
   return (
-    <div className="card flex flex-col gap-3 p-4">
+    <article className="card flex flex-col gap-4 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {a.profiles.discord_avatar_url ? (
@@ -160,10 +164,10 @@ function ApplicationCard({
             <div className="h-9 w-9 rounded-full bg-[var(--surface-2)]" />
           )}
           <div>
-            <p className="font-medium">{displayName(a.profiles)}</p>
+            <p className="display text-2xl font-bold uppercase">{displayName(a.profiles)}</p>
             <p className="text-xs text-[var(--text-faint)]">
               {a.profiles.discord_username} · {APPLICANT_TYPE_LABELS[a.applicant_type]} ·{" "}
-              {new Date(a.created_at).toLocaleDateString("es-ES")}
+              <LocalDate iso={a.created_at} className="tabular" />
             </p>
           </div>
         </div>
@@ -173,12 +177,16 @@ function ApplicationCard({
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-[var(--border)] pt-3 text-sm sm:grid-cols-4">
         {a.class && (
           <Field label="Clase">
-            <span style={{ color: CLASS_COLORS[a.class] }}>
+            <span className="font-semibold" style={{ color: CLASS_COLORS[a.class] }}>
               {a.spec} {CLASS_LABELS[a.class]}
             </span>
           </Field>
         )}
-        {a.gearscore != null && <Field label="Gearscore">{a.gearscore}</Field>}
+        {a.gearscore != null && (
+          <Field label="Gearscore">
+            <span className="tabular">{a.gearscore}</span>
+          </Field>
+        )}
         {a.previous_server && <Field label="Server anterior">{a.previous_server}</Field>}
         {a.previous_guild && <Field label="Guild anterior">{a.previous_guild}</Field>}
         {a.availability && (
@@ -211,7 +219,7 @@ function ApplicationCard({
         ))}
         <CommentForm applicationId={a.id} />
       </div>
-    </div>
+    </article>
   );
 }
 

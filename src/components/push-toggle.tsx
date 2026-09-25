@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { subscribePush, unsubscribePush } from "@/app/(app)/notificaciones/actions";
+import { useClientValue } from "@/lib/use-client-value";
 
 type State = "loading" | "unsupported" | "ios-install" | "denied" | "off" | "on";
 
@@ -12,28 +13,27 @@ function urlBase64ToUint8Array(base64: string) {
 }
 
 export function PushToggle({ compact = false }: { compact?: boolean }) {
-  const [state, setState] = useState<State>("loading");
-  const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
+  // What the browser supports is known synchronously; whether we're subscribed needs a promise.
+  const support = useClientValue<State | "check">(() => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setState(isIOS && !isStandalone ? "ios-install" : "unsupported");
-      return;
+      return isIOS && !isStandalone ? "ios-install" : "unsupported";
     }
-    if (Notification.permission === "denied") {
-      setState("denied");
-      return;
-    }
+    return Notification.permission === "denied" ? "denied" : "check";
+  }, "loading");
+  const [subscription, setState] = useState<State | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const state: State = support !== "check" ? support : (subscription ?? "loading");
 
+  useEffect(() => {
+    if (support !== "check") return;
     navigator.serviceWorker
       .register("/sw.js", { scope: "/", updateViaCache: "none" })
       .then((reg) => reg.pushManager.getSubscription())
       .then((sub) => setState(sub ? "on" : "off"))
       .catch(() => setState("unsupported"));
-  }, []);
+  }, [support]);
 
   function enable() {
     startTransition(async () => {

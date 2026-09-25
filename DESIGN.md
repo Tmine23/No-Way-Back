@@ -4,33 +4,42 @@
 
 ## World
 
-A modern esports/ops-team dashboard, not a fantasy-game skin. Near-black neutral base with a single restrained accent (`#9966CC`, the guild's brand purple) used sparingly for active states, links, key numbers, and the mark — never as a glow, gradient fill, or dominant color field. This replaces an earlier dark-fantasy/gold-and-frost direction the user explicitly rejected as generic and unpolished.
+"Tabla de parses." The app borrows its visual language from the thing raiders already stare at after every pull: a ranked log table. A deep navy ground, flat slate plates, hairline rules, big condensed headlines, and one strict rule for color: the WoW quality ramp (gray → green → blue → purple → orange → pink → gold) is reserved for ranked or quality data (gearscore percentile, item quality). The guild purple `#9966CC` is the brand and the action color, and it is never used as a ramp value. The earlier near-black "esports ops dashboard" world, with Geist and restrained motion, is retired.
 
 ## Palette
 
-- `--bg` `#0a0a0c` — page background (off-black, not pure `#000`)
-- `--surface` `#131316` / `--surface-2` `#1c1c20` — elevated panels, inputs, hover states
-- `--border` `#26262b` / `--border-strong` `#38383f` — hairline dividers, the primary structural device for dense lists (roster, members) instead of boxing every row in its own card
-- `--accent` `#9966cc` / `--accent-soft` `#c3a3e0` / `--accent-dim` rgba tint — the one accent color; max one per surface, used at low-to-moderate saturation
-- `--text` / `--text-muted` / `--text-faint` — three-step neutral text hierarchy
-- `--danger` `#e5484d` — reserved for destructive/error states only
+- Ground `--bg` `#101422`; surfaces `--surface` `#161b2b`, `--surface-2` `#1d2335`; plate `--plate` `#272b3b` (the one heavier panel per screen, e.g. the next raid)
+- Rules `--border` `#262c3d`, `--border-strong` `#363d52`
+- Ink `--text` `#f2f4f8`; second ink `--text-muted` `#a8bdce` (steel blue); `--text-faint` `#7c8aa0`
+- Brand and action `--accent` `#9966cc`, `--accent-hover` `#a878d6`, `--accent-soft` `#c9aee6`, `--accent-dim` (16% tint)
+- Ramp, data only: `--rank-gray` `#7c8595`, `--rank-green` `#1eff00`, `--rank-blue` `#3d8bff`, `--rank-purple` `#a335ee`, `--rank-orange` `#ff8000`, `--rank-pink` `#e268a8`, `--rank-gold` `#e5cc80`. Percentile cutoffs live in `src/lib/ramp.ts` (25/50/75/95/99/100).
+- Class colors (`CLASS_COLORS`) color character names only.
+- `--danger` `#f06a6f` for destructive and error states.
 
 ## Typography
 
-Geist (sans) for all UI text; Geist Mono for numeric/data values (stat counts, timestamps, ilvl) to visually distinguish data from prose, echoing an operations/data-tool register. No serif or display face — this is an Operate-mode surface, not a marketing page. Headings are tight-tracked, weight-led (semibold), not oversized.
+Barlow for UI text, Barlow Condensed for display. Page titles and section titles are Barlow Condensed, bold, uppercase, tight leading (`.display`). Numbers use tabular figures (`.tabular`) so tables and counters line up. No eyebrow labels above headings: "Hardcore guild" is a subtitle under the title, never above it.
 
 ## Layout
 
-Avoids the generic three-equal-card row and centered hero. The dashboard home uses an asymmetric grid (a wide "next raid" panel beside a narrower stats column); the login page is a left-aligned split screen (content left, feature list right on desktop, stacked on mobile). Dense listings (Roster, Members) are real tables/divided lists with hairline row separators rather than a card per row, so many rows stay scannable.
+- App shell: sticky top bar with the emblem and "NO WAY BACK" wordmark, inline links on desktop; fixed bottom tab bar on mobile (Inicio, Raids, Roster, Personajes, Más), where "Más" opens a sheet with the officer and GM sections.
+- Pages open with `PageHeader` (display title, optional one-line description, actions on the right).
+- Home is asymmetric: the next raid on a plate (title, local date, countdown, composition fill, CTA) beside the schedule in the viewer's local time, then "Tus personajes" as a ranked table, then a hairline stat strip.
+- Dense data goes in real tables with hairline rows (`.table`), not card grids. Roster: # · GS with percentile bar · character · class · player · spec; sortable, filterable by role and mains.
+- Cards 14px radius, controls 8px.
 
 ## Motion
 
-Restrained and purposeful only, per the product's own principle: transform/opacity transitions in the 150–350ms range, entrance fades on page content, a spring-animated shared underline for the active nav link, and a modal enter/exit. No perpetual/looping animation, no scroll-jacking, no decorative motion — this is internal tooling used every raid night, not a marketing surface.
+Motion responds to the pointer and to state changes.
+- Primary CTAs sit in `Magnetic` (spring pull toward the cursor, mouse only). Every button presses to `scale(0.97)`; hover effects are limited to `(hover: hover) and (pointer: fine)`.
+- Percentile bars fill once on mount (700ms, ease-out); roster rows re-sort with a layout spring; nav indicators, filters and RSVP choices slide with shared `layoutId`.
+- No decorative 3D. A three.js skyline of ramp-colored bars on login was tried and rejected by the user ("feo, sin sentido"). three.js stays reserved for the future boss plans, where it shows real positions.
+- Easing `cubic-bezier(0.23, 1, 0.32, 1)`, UI transitions under 300ms. `MotionConfig reducedMotion="user"` plus a global CSS rule honor reduced motion.
 
 ## Mark
 
-The guild's real logo (`LogoNWB.jfif`): a peak pierced by an ascending arrow rendered as a 3D purple badge, with a "NO WAY BACK" wordmark. The source file was a flattened JPEG export with its transparency checkerboard baked into the pixels; `public/logo-icon.png` (icon only, used in nav/favicon/login) and `public/logo-nwb.png` (full icon+wordmark lockup) were produced from it by detecting the checkerboard's achromatic signature and despeckling JPEG ringing at the edges, restoring real alpha transparency. An earlier from-scratch geometric placeholder mark was replaced once the real asset was usable.
+The guild emblem `public/logo-icon.png` (peak and arrow monogram, purple). Used at 36px in the top bar, larger on login, recruitment and the pending screen. Never recolored.
 
-## Process note
+## Components
 
-Built code-led (no image generation available in this environment), so the full Impeccable comp/decision-page round was skipped by contract, not by drift — the direction was committed directly from the user's brief (rejected prior look, purple accent, reference mark, "Emil Kowalski"-style restrained motion, "taste-skill" anti-slop rules) and built in one committed pass, then verified with the mechanical detector (`impeccable detect`, 0 findings) and a manual desktop/mobile screenshot review in place of the shipped finish-reviewer subagent, which this harness could not spawn for this check.
+`PageHeader`, `ParseBar` / `RankValue`, `RosterTable`, `Magnetic`, `DateBlock` / `LocalDate` / `Countdown` (all times render in the viewer's zone), `RsvpControls` (segmented Voy / Tal vez / No puedo), `RaidComposition` (drag and drop groups plus bench, role counts).

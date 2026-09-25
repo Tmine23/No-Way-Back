@@ -12,8 +12,11 @@ import {
   DeleteScheduleButton,
   PhaseSelect,
 } from "@/components/config-controls";
+import { FadeIn } from "@/components/fade-in";
+import { PageHeader } from "@/components/page-header";
 import { RaidSchedule } from "@/components/raid-schedule";
 import { TIMEZONE_OPTIONS, WEEKDAY_LABELS } from "@/lib/wow";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function ConfigPage() {
   const viewer = await getCurrentProfile();
@@ -32,14 +35,13 @@ export default async function ConfigPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configuración</h1>
-        <p className="text-[var(--text-muted)]">Solo el Guild Master ve esta sección.</p>
-      </div>
+      <FadeIn>
+        <PageHeader title="Configuración" description="Solo el Guild Master ve esta sección." />
+      </FadeIn>
 
       <Section title="Guild" description="Datos generales e integración con Discord.">
-        <form action={saveGuildSettings} className="card grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
-          <Field label="Nombre del guild">
+        <form action={saveGuildSettings} className="card grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
+          <Field label="Nombre de la guild">
             <input name="guild_name" defaultValue={settings.guild_name} className="input" />
           </Field>
           <Field label="Zona horaria del horario de raid">
@@ -52,10 +54,10 @@ export default async function ConfigPage() {
             </select>
           </Field>
           <Field label="ID del servidor de Discord">
-            <input name="discord_guild_id" defaultValue={settings.discord_guild_id ?? ""} className="input font-mono" />
+            <input name="discord_guild_id" defaultValue={settings.discord_guild_id ?? ""} inputMode="numeric" spellCheck={false} className="input tabular" />
           </Field>
           <Field label="ID del rol «No Way Back» en Discord">
-            <input name="discord_raider_role_id" defaultValue={settings.discord_raider_role_id ?? ""} className="input font-mono" />
+            <input name="discord_raider_role_id" defaultValue={settings.discord_raider_role_id ?? ""} inputMode="numeric" spellCheck={false} className="input tabular" />
           </Field>
           <div className="sm:col-span-2">
             <Field label="Mensaje de reclutamiento (página pública)">
@@ -68,21 +70,21 @@ export default async function ConfigPage() {
               />
             </Field>
           </div>
-          <label className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+          <label className="flex min-h-10 cursor-pointer items-center gap-2 text-sm">
             <input type="checkbox" name="recruitment_open" defaultChecked={settings.recruitment_open} className="h-4 w-4 accent-[var(--accent)]" />
             Reclutamiento abierto
           </label>
           <div className="sm:text-right">
-            <button type="submit" className="btn-primary text-sm">
+            <SubmitButton>
               Guardar
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </Section>
 
       <Section
         title="Horario de raid"
-        description="Lo defines en la zona horaria del guild; cada miembro lo ve convertido a su hora local."
+        description="Lo defines en la zona horaria de la guild; cada miembro lo ve convertido a su hora local."
       >
         <div className="card p-5">
           <RaidSchedule rows={schedule ?? []} guildTimezone={settings.timezone} />
@@ -101,19 +103,19 @@ export default async function ConfigPage() {
           )}
         </div>
         <form action={addScheduleRow} className="card grid grid-cols-2 gap-3 p-4 sm:grid-cols-5">
-          <select name="weekday" className="input text-sm" defaultValue="3">
+          <select name="weekday" aria-label="Día" className="input text-sm" defaultValue="3">
             {WEEKDAY_LABELS.map((d, i) => (
               <option key={d} value={i}>
                 {d}
               </option>
             ))}
           </select>
-          <input name="start_time" type="time" required defaultValue="21:00" className="input text-sm" />
-          <input name="end_time" type="time" required defaultValue="00:00" className="input text-sm" />
-          <input name="label" className="input text-sm" placeholder="Ej. Naxx 25 main" />
-          <button type="submit" className="btn-primary text-sm">
+          <input name="start_time" aria-label="Inicio" type="time" required defaultValue="21:00" className="input text-sm" />
+          <input name="end_time" aria-label="Fin" type="time" required defaultValue="00:00" className="input text-sm" />
+          <input name="label" aria-label="Etiqueta" autoComplete="off" className="input text-sm" placeholder="Naxx 25 main…" />
+          <SubmitButton>
             Agregar
-          </button>
+          </SubmitButton>
         </form>
       </Section>
 
@@ -130,7 +132,7 @@ export default async function ConfigPage() {
                   <p className="font-medium">
                     {s.name}
                     {active && (
-                      <span className="badge ml-2 border border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent-soft)]">
+                      <span className="badge ml-2 bg-[var(--accent-dim)] text-[var(--accent-soft)]">
                         Activa
                       </span>
                     )}
@@ -151,42 +153,42 @@ export default async function ConfigPage() {
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <form action={addSeason} className="card flex flex-col gap-3 p-4">
-            <p className="text-sm font-medium">Nueva temporada</p>
-            <select name="server_id" required className="input text-sm">
+            <p className="font-semibold">Nueva temporada</p>
+            <select name="server_id" aria-label="Servidor" required className="input text-sm">
               {(servers ?? []).map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
                 </option>
               ))}
             </select>
-            <input name="name" required className="input text-sm" placeholder="Ej. Frostmourne 2027" />
+            <input name="name" aria-label="Nombre de la temporada" required autoComplete="off" className="input text-sm" placeholder="Nombre: Temporada 2027…" />
             <div className="grid grid-cols-3 gap-2">
-              <input name="started_on" type="date" className="input text-sm" />
-              <select name="reset_weekday" className="input text-sm" defaultValue="3">
+              <input name="started_on" aria-label="Inicio de temporada" type="date" className="input text-sm" />
+              <select name="reset_weekday" aria-label="Día de reset" className="input text-sm" defaultValue="3">
                 {WEEKDAY_LABELS.map((d, i) => (
                   <option key={d} value={i}>
                     Reset {d}
                   </option>
                 ))}
               </select>
-              <input name="reset_time" type="time" defaultValue="05:00" className="input text-sm" />
+              <input name="reset_time" aria-label="Hora de reset" type="time" defaultValue="05:00" className="input text-sm" />
             </div>
-            <label className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+            <label className="flex min-h-10 cursor-pointer items-center gap-2 text-sm">
               <input type="checkbox" name="activate" className="h-4 w-4 accent-[var(--accent)]" />
               Activarla ahora
             </label>
-            <button type="submit" className="btn-primary text-sm">
+            <SubmitButton className="w-fit">
               Crear temporada
-            </button>
+            </SubmitButton>
           </form>
 
           <form action={addServer} className="card flex flex-col gap-3 p-4">
-            <p className="text-sm font-medium">Nuevo servidor</p>
-            <input name="name" required className="input text-sm" placeholder="Ej. Warmane - Icecrown" />
-            <input name="uwu_server_key" className="input text-sm" placeholder="Nombre en UwU Logs (opcional)" />
-            <button type="submit" className="btn-secondary text-sm">
+            <p className="font-semibold">Nuevo servidor</p>
+            <input name="name" aria-label="Nombre del servidor" required autoComplete="off" className="input text-sm" placeholder="Reino - Servidor…" />
+            <input name="uwu_server_key" aria-label="Nombre en UwU Logs" autoComplete="off" className="input text-sm" placeholder="Nombre en UwU Logs (opcional)" />
+            <SubmitButton variant="secondary" className="w-fit">
               Agregar servidor
-            </button>
+            </SubmitButton>
           </form>
         </div>
       </Section>
@@ -204,9 +206,9 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3">
+    <section className="flex flex-col gap-4">
       <div>
-        <h2 className="font-medium">{title}</h2>
+        <h2 className="display text-3xl font-bold uppercase">{title}</h2>
         <p className="text-sm text-[var(--text-muted)]">{description}</p>
       </div>
       {children}
@@ -216,7 +218,7 @@ function Section({
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="flex flex-col gap-1 text-sm text-[var(--text-muted)]">
+    <label className="field">
       {label}
       {children}
     </label>

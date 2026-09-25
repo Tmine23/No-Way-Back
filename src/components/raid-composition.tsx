@@ -44,12 +44,11 @@ export function RaidComposition({
   showStatus: boolean;
 }) {
   const [, startTransition] = useTransition();
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const placedSignups = signups.filter((s) => s.slot_index !== null);
   const placedCharacterIds = new Set(placedSignups.map((s) => s.character_id));
+  const placedOwners = new Set(placedSignups.map((s) => s.characters.owner_id));
   const assignedBySlot = new Map(placedSignups.map((s) => [s.slot_index as number, s]));
   const poolCharacters = allCharacters.filter((c) => !placedCharacterIds.has(c.id));
 
@@ -70,59 +69,85 @@ export function RaidComposition({
   }
 
   const groupCount = raidSize / GROUP_SIZE;
+  const inRaid = placedSignups.filter((s) => (s.slot_index as number) < raidSize);
+  const roleCounts = (["tank", "healer", "dps"] as const).map((role) => ({
+    role,
+    count: inRaid.filter((s) => s.characters.role === role).length,
+  }));
 
   return (
     <DndContext id="raid-composition" sensors={sensors} onDragEnd={handleDragEnd}>
-      {canEdit && (
-        <div className="card p-4">
-          <p className="mb-3 text-sm font-medium text-[var(--text-muted)]">
-            Roster del guild (arrastra a un grupo)
-          </p>
-          <Pool>
-            {poolCharacters.map((c) => (
-              <Chip key={c.id} character={c} draggable />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="display text-3xl font-bold uppercase">Composición</h2>
+          <dl className="flex gap-5 text-sm">
+            {roleCounts.map((r) => (
+              <div key={r.role} className="flex items-baseline gap-1.5">
+                <dt className="text-[var(--text-muted)]">{ROLE_LABELS[r.role]}</dt>
+                <dd className="tabular font-semibold">{r.count}</dd>
+              </div>
             ))}
-            {poolCharacters.length === 0 && (
-              <p className="text-sm text-[var(--text-faint)]">
-                Todos los personajes ya están asignados.
-              </p>
-            )}
-          </Pool>
+            <div className="flex items-baseline gap-1.5">
+              <dt className="text-[var(--text-muted)]">Total</dt>
+              <dd className="tabular font-semibold">
+                {inRaid.length}
+                <span className="text-[var(--text-faint)]">/{raidSize}</span>
+              </dd>
+            </div>
+          </dl>
         </div>
-      )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: groupCount }).map((_, g) => (
-          <GroupCard key={g} label={`Grupo ${g + 1}`}>
-            {Array.from({ length: GROUP_SIZE }).map((_, i) => {
-              const slotIndex = g * GROUP_SIZE + i;
-              return (
-                <Slot
-                  key={slotIndex}
-                  slotIndex={slotIndex}
-                  signup={assignedBySlot.get(slotIndex)}
-                  canEdit={canEdit}
-                  showStatus={showStatus}
-                />
-              );
-            })}
-          </GroupCard>
-        ))}
+        {canEdit && (
+          <div className="card p-4">
+            <p className="mb-3 text-sm font-medium text-[var(--text-muted)]">
+              Personajes de la guild. Arrástralos a un grupo.
+            </p>
+            <Pool>
+              {poolCharacters.map((c) => (
+                <Chip key={c.id} character={c} draggable dimmed={placedOwners.has(c.owner_id)} />
+              ))}
+              {poolCharacters.length === 0 && (
+                <p className="text-sm text-[var(--text-faint)]">Todos los personajes ya están asignados.</p>
+              )}
+            </Pool>
+          </div>
+        )}
 
-        <GroupCard label="Banca">
-          {Array.from({ length: BENCH_SIZE }).map((_, i) => {
-            const slotIndex = raidSize + i;
-            return (
-              <Slot
-                key={slotIndex}
-                slotIndex={slotIndex}
-                signup={assignedBySlot.get(slotIndex)}
-                canEdit={canEdit}
-                showStatus={showStatus}
-              />
-            );
-          })}
-        </GroupCard>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: groupCount }).map((_, g) => (
+            <GroupCard key={g} label={`Grupo ${g + 1}`}>
+              {Array.from({ length: GROUP_SIZE }).map((_, i) => {
+                const slotIndex = g * GROUP_SIZE + i;
+                return (
+                  <Slot
+                    key={slotIndex}
+                    slotIndex={slotIndex}
+                    signup={assignedBySlot.get(slotIndex)}
+                    canEdit={canEdit}
+                    showStatus={showStatus}
+                  />
+                );
+              })}
+            </GroupCard>
+          ))}
+
+          {canEdit && (
+            <GroupCard label="Banca">
+              {Array.from({ length: BENCH_SIZE }).map((_, i) => {
+                const slotIndex = raidSize + i;
+                return (
+                  <Slot
+                    key={slotIndex}
+                    slotIndex={slotIndex}
+                    signup={assignedBySlot.get(slotIndex)}
+                    canEdit={canEdit}
+                    showStatus={showStatus}
+                  />
+                );
+              })}
+            </GroupCard>
+          )}
+        </div>
       </div>
     </DndContext>
   );
@@ -133,7 +158,7 @@ function Pool({ children }: { children: React.ReactNode }) {
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-wrap gap-2 rounded-lg p-2 transition-colors ${
+      className={`flex max-h-64 flex-wrap gap-2 overflow-y-auto rounded-lg p-2 transition-colors duration-150 ${
         isOver ? "bg-[var(--accent-dim)]" : ""
       }`}
     >
@@ -145,9 +170,7 @@ function Pool({ children }: { children: React.ReactNode }) {
 function GroupCard({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="card p-3">
-      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--text-faint)]">
-        {label}
-      </p>
+      <p className="display mb-2 px-1 text-lg font-semibold uppercase text-[var(--text-muted)]">{label}</p>
       <div className="flex flex-col gap-1">{children}</div>
     </div>
   );
@@ -169,16 +192,12 @@ function Slot({
   return (
     <div
       ref={setNodeRef}
-      className={`flex h-10 items-center rounded-md border border-dashed border-[var(--border)] px-1.5 transition-colors ${
+      className={`flex h-10 items-center rounded-md border border-dashed border-[var(--border)] px-1.5 transition-colors duration-150 ${
         isOver ? "border-[var(--accent)] bg-[var(--accent-dim)]" : ""
       }`}
     >
       {signup ? (
-        <Chip
-          character={signup.characters}
-          draggable={canEdit}
-          status={showStatus ? signup.status : undefined}
-        />
+        <Chip character={signup.characters} draggable={canEdit} status={showStatus ? signup.status : undefined} />
       ) : (
         <span className="text-xs text-[var(--text-faint)]">Vacío</span>
       )}
@@ -189,10 +208,12 @@ function Slot({
 function Chip({
   character,
   draggable,
+  dimmed = false,
   status,
 }: {
   character: CharacterWithOwner;
   draggable: boolean;
+  dimmed?: boolean;
   status?: Enums<"rsvp_status">;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -206,13 +227,16 @@ function Chip({
       {...(draggable ? listeners : {})}
       {...(draggable ? attributes : {})}
       style={{
-        transform: transform ? CSS.Translate.toString(transform) : undefined,
-        opacity: isDragging ? 0.4 : 1,
+        transform: transform ? `${CSS.Translate.toString(transform)} scale(1.04)` : undefined,
+        zIndex: isDragging ? 20 : undefined,
+        boxShadow: isDragging ? "0 12px 28px rgba(0,0,0,0.45)" : undefined,
       }}
-      className={`flex min-w-0 items-center gap-1.5 rounded-md bg-[var(--surface-2)] px-2 py-1 text-sm ${
-        draggable ? "cursor-grab active:cursor-grabbing" : ""
+      className={`relative flex min-w-0 items-center gap-1.5 rounded-md bg-[var(--surface-2)] px-2 py-1 text-sm ${
+        dimmed && !isDragging ? "opacity-45" : ""
+      } ${
+        draggable ? "cursor-grab touch-none active:cursor-grabbing" : ""
       }`}
-      title={ROLE_LABELS[character.role]}
+      title={dimmed ? "Su jugador ya está en la composición: si lo arrastras, reemplaza al otro personaje" : ROLE_LABELS[character.role]}
     >
       {status && (
         <span

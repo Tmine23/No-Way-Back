@@ -68,7 +68,7 @@ export async function submitApplication(
 
   await notifyOfficers({
     title: "Nueva postulación",
-    body: `${name} quiere unirse al guild.`,
+    body: `${name} quiere unirse a la guild.`,
     url: "/solicitudes",
   }).catch(() => undefined);
 

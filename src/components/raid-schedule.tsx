@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useClientValue } from "@/lib/use-client-value";
 import { formatTime, formatWeekday, nextWeeklyOccurrence } from "@/lib/time";
 import { TIMEZONE_OPTIONS, WEEKDAY_LABELS } from "@/lib/wow";
 import type { Tables } from "@/types/database";
@@ -13,11 +13,7 @@ function durationMinutes(start: string, end: string) {
 }
 
 export function RaidSchedule({ rows, guildTimezone }: { rows: Row[]; guildTimezone: string }) {
-  const [viewerZone, setViewerZone] = useState<string | null>(null);
-
-  useEffect(() => {
-    setViewerZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-  }, []);
+  const viewerZone = useClientValue(() => Intl.DateTimeFormat().resolvedOptions().timeZone, null);
 
   if (rows.length === 0) {
     return <p className="text-sm text-[var(--text-muted)]">Todavía no hay horario de raid definido.</p>;
@@ -42,13 +38,13 @@ export function RaidSchedule({ rows, guildTimezone }: { rows: Row[]; guildTimezo
               {row.label && <p className="text-xs text-[var(--text-faint)]">{row.label}</p>}
             </div>
             <div className="text-right">
-              <p className="font-mono text-sm text-[var(--accent-soft)]">
+              <p className="tabular text-sm font-medium text-[var(--text)]">
                 {viewerZone
                   ? `${formatTime(start, viewerZone)} – ${formatTime(end, viewerZone)}`
                   : `${row.start_time.slice(0, 5)} – ${row.end_time.slice(0, 5)}`}
               </p>
               {viewerZone && !sameZone && (
-                <p className="font-mono text-xs text-[var(--text-faint)]">
+                <p className="tabular text-xs text-[var(--text-faint)]">
                   {WEEKDAY_LABELS[row.weekday]} {row.start_time.slice(0, 5)} hora {guildLabel}
                 </p>
               )}

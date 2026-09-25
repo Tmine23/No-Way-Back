@@ -22,7 +22,7 @@ const APPLICANT_MESSAGES: Record<Enums<"application_status">, { title: string; b
   },
   rejected: {
     title: "Resultado de tu postulación",
-    body: "Esta vez tu postulación no fue aceptada. Gracias por tu interés en el guild.",
+    body: "Esta vez tu postulación no fue aceptada. Gracias por tu interés en la guild.",
   },
 };
 

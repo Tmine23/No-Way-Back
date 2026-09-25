@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { displayName } from "@/lib/auth";
+import { percentileRank } from "@/lib/ramp";
 import { CLASS_COLORS, CLASS_LABELS, ROLE_LABELS, WOW_CLASSES } from "@/lib/wow";
 import { FadeIn } from "@/components/fade-in";
+import { PageHeader } from "@/components/page-header";
+import { RosterTable, type RosterRow } from "@/components/roster-table";
 import type { Enums, Tables } from "@/types/database";
 
 type CharacterWithOwner = Tables<"characters"> & {
@@ -29,17 +32,23 @@ export default async function RosterPage({
   const { data } = await supabase
     .from("characters")
     .select("*, profiles(discord_username, known_as)")
-    .eq("server_id", serverId ?? "")
-    .order("is_main", { ascending: false })
-    .order("name");
+    .eq("server_id", serverId ?? "");
   const characters = (data ?? []) as CharacterWithOwner[];
 
-  const byOwner = new Map<string, CharacterWithOwner[]>();
-  for (const c of characters) {
-    const owner = c.profiles ? displayName(c.profiles) : "Sin dueño";
-    byOwner.set(owner, [...(byOwner.get(owner) ?? []), c]);
-  }
-  const groups = [...byOwner.entries()].sort(([a], [b]) => a.localeCompare(b));
+  const scores = characters.map((c) => c.gearscore);
+  const rows: RosterRow[] = characters.map((c) => ({
+    id: c.id,
+    name: c.name,
+    owner: c.profiles ? displayName(c.profiles) : "Sin dueño",
+    class: c.class,
+    spec: c.spec_primary,
+    role: c.role,
+    spec2: c.spec_secondary,
+    role2: c.role_secondary,
+    gearscore: c.gearscore,
+    percentile: percentileRank(scores, c.gearscore),
+    isMain: c.is_main,
+  }));
 
   const mains = characters.filter((c) => c.is_main);
   const roleCounts = ROLES.map((r) => ({ role: r, count: mains.filter((c) => c.role === r).length }));
@@ -49,106 +58,71 @@ export default async function RosterPage({
   })).filter((c) => c.count > 0);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Roster</h1>
-        <div className="flex items-center gap-2">
-          {servers && servers.length > 1 && (
-            <div className="flex gap-1">
-              {servers.map((s) => (
-                <Link
-                  key={s.id}
-                  href={`/roster?server=${s.id}`}
-                  className={`rounded-md px-3 py-1.5 text-sm ${
-                    s.id === serverId
-                      ? "bg-[var(--surface-2)] text-[var(--text)]"
-                      : "text-[var(--text-muted)] hover:text-[var(--text)]"
-                  }`}
-                >
-                  {s.name}
-                </Link>
-              ))}
-            </div>
-          )}
-          <Link href="/personajes/nuevo" className="btn-primary text-sm">
-            + Registrar personaje
-          </Link>
-        </div>
-      </div>
+    <div className="flex flex-col gap-8">
+      <FadeIn>
+        <PageHeader
+          title="Roster"
+          description="Todos los personajes de la guild. El color del gearscore marca el percentil dentro de la guild."
+          actions={
+            <Link href="/personajes/nuevo" className="btn-primary">
+              Registrar personaje
+            </Link>
+          }
+        />
+      </FadeIn>
+
+      {servers && servers.length > 1 && (
+        <nav aria-label="Servidor" className="flex flex-wrap gap-1">
+          {servers.map((s) => (
+            <Link
+              key={s.id}
+              href={`/roster?server=${s.id}`}
+              aria-current={s.id === serverId ? "page" : undefined}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                s.id === serverId
+                  ? "bg-[var(--plate)] text-[var(--text)]"
+                  : "text-[var(--text-muted)] hover:text-[var(--text)]"
+              }`}
+            >
+              {s.name}
+            </Link>
+          ))}
+        </nav>
+      )}
 
       {mains.length > 0 && (
-        <div className="card flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 text-sm">
-          <span className="text-[var(--text-faint)]">Mains</span>
-          {roleCounts.map((r) => (
-            <span key={r.role}>
-              {ROLE_LABELS[r.role]} <span className="font-mono text-[var(--accent-soft)]">{r.count}</span>
-            </span>
-          ))}
-          <span className="hidden h-4 w-px bg-[var(--border)] sm:block" />
-          {classCounts.map((c) => (
-            <span key={c.cls} style={{ color: CLASS_COLORS[c.cls] }}>
-              {CLASS_LABELS[c.cls]} <span className="font-mono">{c.count}</span>
-            </span>
-          ))}
+        <FadeIn delay={0.05} className="grid gap-px overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--border)] sm:grid-cols-[auto_1fr]">
+          <div className="flex gap-6 bg-[var(--surface)] px-5 py-4">
+            {roleCounts.map((r) => (
+              <div key={r.role}>
+                <p className="display tabular text-4xl font-bold">{r.count}</p>
+                <p className="text-sm text-[var(--text-muted)]">{ROLE_LABELS[r.role]}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap content-center gap-x-5 gap-y-2 bg-[var(--surface)] px-5 py-4 text-sm">
+            {classCounts.map((c) => (
+              <span key={c.cls} className="flex items-baseline gap-1.5">
+                <span className="font-medium" style={{ color: CLASS_COLORS[c.cls] }}>
+                  {CLASS_LABELS[c.cls]}
+                </span>
+                <span className="tabular text-[var(--text-muted)]">{c.count}</span>
+              </span>
+            ))}
+          </div>
+        </FadeIn>
+      )}
+
+      {rows.length === 0 ? (
+        <div className="card flex flex-col items-start gap-3 p-6">
+          <p className="font-medium">Todavía no hay personajes en este servidor.</p>
+          <Link href="/personajes/nuevo" className="btn-secondary">
+            Registrar el primero
+          </Link>
         </div>
-      )}
-
-      {groups.length === 0 && (
-        <p className="text-[var(--text-muted)]">Todavía no hay personajes registrados en este servidor.</p>
-      )}
-
-      {groups.length > 0 && (
-        <FadeIn className="card overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead>
-              <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
-                <th className="w-36 px-4 py-3 font-medium">Jugador</th>
-                <th className="px-4 py-3 font-medium">Personaje</th>
-                <th className="px-4 py-3 font-medium">Clase</th>
-                <th className="px-4 py-3 font-medium">Spec</th>
-                <th className="px-4 py-3 font-medium">Segunda spec</th>
-                <th className="px-4 py-3 text-right font-medium">GS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map(([owner, chars]) =>
-                chars.map((c, i) => (
-                  <tr key={c.id} className="border-b border-[var(--border)] last:border-0">
-                    {i === 0 && (
-                      <td rowSpan={chars.length} className="border-r border-[var(--border)] px-4 py-3 align-top font-medium">
-                        {owner}
-                      </td>
-                    )}
-                    <td className="px-4 py-3">
-                      <span className="font-medium" style={{ color: CLASS_COLORS[c.class] }}>
-                        {c.name}
-                      </span>
-                      {c.is_main && (
-                        <span className="badge ml-2 border border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent-soft)]">
-                          Main
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--text-muted)]">{CLASS_LABELS[c.class]}</td>
-                    <td className="px-4 py-3 text-[var(--text-muted)]">
-                      {c.spec_primary} <span className="text-[var(--text-faint)]">· {ROLE_LABELS[c.role]}</span>
-                    </td>
-                    <td className="px-4 py-3 text-[var(--text-muted)]">
-                      {c.spec_secondary ? (
-                        <>
-                          {c.spec_secondary}{" "}
-                          <span className="text-[var(--text-faint)]">· {ROLE_LABELS[c.role_secondary ?? "dps"]}</span>
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-[var(--text-muted)]">{c.gearscore || "—"}</td>
-                  </tr>
-                )),
-              )}
-            </tbody>
-          </table>
+      ) : (
+        <FadeIn delay={0.1}>
+          <RosterTable rows={rows} />
         </FadeIn>
       )}
     </div>

@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { FadeIn } from "@/components/fade-in";
+import { LocalDate } from "@/components/local-time";
+import { PageHeader } from "@/components/page-header";
 import { PushToggle } from "@/components/push-toggle";
 import { MarkAllReadButton } from "@/components/mark-all-read-button";
 
@@ -14,11 +17,10 @@ export default async function NotificationsPage() {
   const hasUnread = (notifications ?? []).some((n) => !n.read_at);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Notificaciones</h1>
-        {hasUnread && <MarkAllReadButton />}
-      </div>
+    <div className="flex flex-col gap-8">
+      <FadeIn>
+        <PageHeader title="Notificaciones" actions={hasUnread && <MarkAllReadButton />} />
+      </FadeIn>
 
       <PushToggle />
 
@@ -27,33 +29,39 @@ export default async function NotificationsPage() {
       )}
 
       {notifications && notifications.length > 0 && (
-        <div className="card divide-y divide-[var(--border)]">
-          {notifications.map((n) => {
-            const content = (
-              <div className="flex items-start gap-3 px-4 py-3">
-                <span
-                  className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${
-                    n.read_at ? "bg-transparent" : "bg-[var(--accent)]"
-                  }`}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium">{n.title}</p>
-                  <p className="text-sm text-[var(--text-muted)]">{n.body}</p>
-                  <p className="mt-1 font-mono text-xs text-[var(--text-faint)]">
-                    {new Date(n.created_at).toLocaleString("es-ES")}
-                  </p>
+        <FadeIn delay={0.05}>
+          <ul className="card divide-y divide-[var(--border)] overflow-hidden">
+            {notifications.map((n) => {
+              const content = (
+                <div className="flex items-start gap-3 px-4 py-3.5">
+                  <span
+                    aria-hidden
+                    className={`mt-2 size-2 shrink-0 rounded-full ${n.read_at ? "bg-transparent" : "bg-[var(--accent)]"}`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className={n.read_at ? "font-medium text-[var(--text-muted)]" : "font-semibold"}>
+                      {!n.read_at && <span className="sr-only">Sin leer: </span>}
+                      {n.title}
+                    </p>
+                    <p className="text-sm text-[var(--text-muted)]">{n.body}</p>
+                  </div>
+                  <LocalDate iso={n.created_at} withTime className="tabular shrink-0 text-xs text-[var(--text-faint)]" />
                 </div>
-              </div>
-            );
-            return n.url ? (
-              <Link key={n.id} href={n.url} className="block transition-colors hover:bg-[var(--surface-2)]">
-                {content}
-              </Link>
-            ) : (
-              <div key={n.id}>{content}</div>
-            );
-          })}
-        </div>
+              );
+              return (
+                <li key={n.id}>
+                  {n.url ? (
+                    <Link href={n.url} className="block transition-colors duration-150 hover:bg-[var(--surface-2)]">
+                      {content}
+                    </Link>
+                  ) : (
+                    content
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </FadeIn>
       )}
     </div>
   );

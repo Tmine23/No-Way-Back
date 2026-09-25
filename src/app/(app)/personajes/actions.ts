@@ -3,72 +3,99 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Enums } from "@/types/database";
+import { formatCharacterName, specRole } from "@/lib/wow";
+import {
+  validateDraft,
+  type CharacterDraft,
+  type CharacterFormState,
+  type DraftErrors,
+} from "@/lib/character-validation";
 
-export type CharacterFormState = { error: string | null };
-
-function optional(formData: FormData, key: string) {
-  const value = (formData.get(key) as string | null)?.trim();
-  return value ? value : null;
-}
-
-export async function saveCharacter(
-  _prev: CharacterFormState,
-  formData: FormData,
-): Promise<CharacterFormState> {
+export async function saveCharacters(_prev: CharacterFormState, formData: FormData): Promise<CharacterFormState> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const id = optional(formData, "id");
-  const serverId = formData.get("server_id") as string;
-  const isMain = formData.get("is_main") === "on";
-  const specSecondary = optional(formData, "spec_secondary");
-  const professions = optional(formData, "professions");
+  let drafts: CharacterDraft[];
+  try {
+    drafts = JSON.parse(String(formData.get("characters")));
+  } catch {
+    return { error: "No se pudo leer el formulario. Recarga la página e intenta de nuevo." };
+  }
+  const serverId = String(formData.get("server_id") ?? "");
+  if (!serverId) return { error: "Elige el servidor." };
+  if (!Array.isArray(drafts) || drafts.length === 0) return { error: "Agrega al menos un personaje." };
+  if (drafts.length > 10) return { error: "Puedes registrar hasta 10 personajes a la vez." };
 
-  const values = {
-    server_id: serverId,
-    name: (formData.get("name") as string).trim(),
-    class: formData.get("class") as Enums<"wow_class">,
-    spec_primary: formData.get("spec_primary") as string,
-    role: formData.get("role") as Enums<"character_role">,
-    spec_secondary: specSecondary,
-    role_secondary: specSecondary
-      ? ((formData.get("role_secondary") as Enums<"character_role">) ?? null)
-      : null,
-    gearscore: Number(formData.get("gearscore")) || 0,
-    professions: professions ? professions.split(",").map((p) => p.trim()).filter(Boolean) : [],
-    armory_url: optional(formData, "armory_url"),
-    is_main: isMain,
-    updated_at: new Date().toISOString(),
-  };
+  const fieldErrors: Record<number, DraftErrors> = {};
+  const seen = new Map<string, number>();
+  for (const [i, draft] of drafts.entries()) {
+    const errors = validateDraft(draft);
+    const key = formatCharacterName(draft.name).toLowerCase();
+    if (!errors.name && seen.has(key)) errors.name = "Repetiste este nombre en el formulario.";
+    seen.set(key, i);
+    if (Object.keys(errors).length) fieldErrors[i] = errors;
+  }
+  if (Object.keys(fieldErrors).length) {
+    return { error: "Revisa los campos marcados en rojo.", fieldErrors };
+  }
 
-  if (isMain) {
-    let query = supabase
-      .from("characters")
-      .update({ is_main: false })
-      .eq("owner_id", user.id)
-      .eq("server_id", serverId);
-    if (id) query = query.neq("id", id);
+  const names = drafts.map((d) => formatCharacterName(d.name));
+  const { data: taken } = await supabase
+    .from("characters")
+    .select("name, owner_id, id")
+    .eq("server_id", serverId)
+    .in("name", names);
+  for (const t of taken ?? []) {
+    const i = names.indexOf(t.name);
+    if (i >= 0 && t.id !== drafts[i].id) {
+      fieldErrors[i] = {
+        name: t.owner_id === user.id ? "Ya tienes un personaje con este nombre." : "Otro jugador ya registró este nombre.",
+      };
+    }
+  }
+  if (Object.keys(fieldErrors).length) {
+    return { error: "Revisa los campos marcados en rojo.", fieldErrors };
+  }
+
+  const mainIndex = drafts.findIndex((d) => d.isMain);
+  if (mainIndex >= 0) {
+    const keepId = drafts[mainIndex].id;
+    let query = supabase.from("characters").update({ is_main: false }).eq("owner_id", user.id).eq("server_id", serverId);
+    if (keepId) query = query.neq("id", keepId);
     await query;
   }
 
-  const { error } = id
-    ? await supabase.from("characters").update(values).eq("id", id).eq("owner_id", user.id)
-    : await supabase.from("characters").insert({ ...values, owner_id: user.id });
-
-  if (error) {
-    if (error.code === "23505") {
-      return { error: "Ya existe un personaje con ese nombre en ese servidor." };
+  for (const [i, draft] of drafts.entries()) {
+    const values = {
+      server_id: serverId,
+      name: names[i],
+      class: draft.class,
+      spec_primary: draft.spec,
+      role: specRole(draft.class, draft.spec)!,
+      spec_secondary: draft.spec2 || null,
+      role_secondary: draft.spec2 ? specRole(draft.class, draft.spec2) : null,
+      gearscore: draft.gearscore.trim() ? Number(draft.gearscore) : 0,
+      professions: draft.professions,
+      armory_url: draft.armoryUrl.trim() || null,
+      is_main: i === mainIndex,
+      updated_at: new Date().toISOString(),
+    };
+    const { error } = draft.id
+      ? await supabase.from("characters").update(values).eq("id", draft.id).eq("owner_id", user.id)
+      : await supabase.from("characters").insert({ ...values, owner_id: user.id });
+    if (error) {
+      if (error.code === "23505") return { error: null, fieldErrors: { [i]: { name: "Otro jugador ya registró este nombre." } } };
+      return { error: `No se pudo guardar ${names[i]}: ${error.message}` };
     }
-    return { error: error.message };
   }
 
   revalidatePath("/personajes");
   revalidatePath("/roster");
-  redirect("/personajes");
+  revalidatePath("/");
+  redirect("/personajes?guardado=" + drafts.length);
 }
 
 export async function deleteCharacter(id: string): Promise<CharacterFormState> {

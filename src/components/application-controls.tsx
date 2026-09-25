@@ -19,7 +19,8 @@ export function ApplicationStatusSelect({
   const [isPending, startTransition] = useTransition();
   return (
     <select
-      className="input text-sm"
+      aria-label="Estado de la postulación"
+      className="input min-h-10 text-sm"
       disabled={isPending}
       defaultValue={status}
       onChange={(e) =>
@@ -55,11 +56,13 @@ export function CommentForm({ applicationId }: { applicationId: string }) {
     >
       <input
         ref={inputRef}
+        aria-label="Comentario interno"
+        autoComplete="off"
         className="input flex-1 text-sm"
-        placeholder="Comentario interno para oficiales"
+        placeholder="Comentario interno para oficiales…"
         disabled={isPending}
       />
-      <button type="submit" disabled={isPending} className="btn-secondary text-sm disabled:opacity-60">
+      <button type="submit" disabled={isPending} className="btn-secondary text-sm">
         Comentar
       </button>
     </form>
@@ -72,7 +75,7 @@ export function DeleteNeedButton({ id }: { id: string }) {
     <button
       onClick={() => startTransition(() => deleteRecruitmentNeed(id))}
       disabled={isPending}
-      className="text-xs text-[var(--text-faint)] hover:text-[var(--danger)]"
+      className="btn-ghost min-h-9 px-2 text-xs"
     >
       Quitar
     </button>

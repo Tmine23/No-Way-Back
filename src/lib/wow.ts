@@ -185,3 +185,61 @@ export const APPLICANT_TYPE_LABELS: Record<Enums<"applicant_type">, string> = {
   new_player: "Jugador nuevo",
   returning_player: "Jugador antiguo",
 };
+
+/** Profession names as the game client shows them; the Spanish name helps players who play in Spanish. */
+export const PRIMARY_PROFESSIONS = [
+  { name: "Alchemy", es: "Alquimia" },
+  { name: "Blacksmithing", es: "Herrería" },
+  { name: "Enchanting", es: "Encantamiento" },
+  { name: "Engineering", es: "Ingeniería" },
+  { name: "Herbalism", es: "Herboristería" },
+  { name: "Inscription", es: "Inscripción" },
+  { name: "Jewelcrafting", es: "Joyería" },
+  { name: "Leatherworking", es: "Peletería" },
+  { name: "Mining", es: "Minería" },
+  { name: "Skinning", es: "Desuello" },
+  { name: "Tailoring", es: "Sastrería" },
+] as const;
+
+export const SECONDARY_PROFESSIONS = [
+  { name: "Cooking", es: "Cocina" },
+  { name: "First Aid", es: "Primeros auxilios" },
+  { name: "Fishing", es: "Pesca" },
+] as const;
+
+export const MAX_PRIMARY_PROFESSIONS = 2;
+export const MAX_GEARSCORE = 7000;
+
+export function isPrimaryProfession(name: string) {
+  return PRIMARY_PROFESSIONS.some((p) => p.name === name);
+}
+
+/** Maps free-text professions saved before the checklist existed onto the canonical names. */
+export function normalizeProfessions(values: string[]) {
+  const all = [...PRIMARY_PROFESSIONS, ...SECONDARY_PROFESSIONS];
+  const found = values
+    .map((v) => v.trim().toLowerCase())
+    .map((v) => all.find((p) => p.name.toLowerCase() === v || p.es.toLowerCase() === v)?.name)
+    .filter((v): v is (typeof all)[number]["name"] => Boolean(v));
+  return [...new Set(found)];
+}
+
+/** WoW names: letters only, 2 to 12 characters, first letter uppercase and the rest lowercase. */
+export function formatCharacterName(value: string) {
+  const trimmed = value.trim();
+  return trimmed.charAt(0).toLocaleUpperCase("es") + trimmed.slice(1).toLocaleLowerCase("es");
+}
+
+export function characterNameError(value: string) {
+  const name = value.trim();
+  if (!name) return "Escribe el nombre del personaje.";
+  if (/\s/.test(name)) return "El nombre no puede tener espacios.";
+  if (!/^\p{L}+$/u.test(name)) return "Solo letras, sin números ni símbolos.";
+  if (name.length < 2) return "Muy corto: mínimo 2 letras.";
+  if (name.length > 12) return "Muy largo: máximo 12 letras.";
+  return null;
+}
+
+export function specRole(cls: Enums<"wow_class">, spec: string) {
+  return CLASS_SPECS[cls].find((s) => s.name === spec)?.role ?? null;
+}

@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.discordapp.com" },
+      { protocol: "https", hostname: "wow.zamimg.com", pathname: "/images/wow/icons/**" },
     ],
   },
   async headers() {

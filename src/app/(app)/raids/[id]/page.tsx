@@ -1,31 +1,26 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, isOfficer } from "@/lib/auth";
-import { RsvpControls } from "@/components/rsvp-controls";
+import { RaidInvitation } from "@/components/raid-invitation";
+import { GROUP_SIZE } from "@/lib/wow";
 import { RaidComposition } from "@/components/raid-composition";
 import { AnnounceRaidButton } from "@/components/announce-raid-button";
-import type { Enums, Tables } from "@/types/database";
+import { FadeIn } from "@/components/fade-in";
+import { Countdown, LocalDateTime } from "@/components/local-time";
+import type { Tables } from "@/types/database";
 
 type CharacterWithOwner = Tables<"characters"> & {
   profiles: { known_as: string | null; discord_username: string } | null;
 };
 type SignupWithCharacter = Tables<"raid_signups"> & { characters: CharacterWithOwner };
 
-export default async function RaidDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function RaidDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
   const profile = await getCurrentProfile();
   const officer = isOfficer(profile);
 
-  const { data: raid } = await supabase
-    .from("raid_events")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data: raid } = await supabase.from("raid_events").select("*").eq("id", id).single();
 
   if (!raid) notFound();
 
@@ -45,38 +40,51 @@ export default async function RaidDetailPage({
   const typedSignups = (signups ?? []) as SignupWithCharacter[];
   const announced = raid.announced_at !== null;
 
-  const invitedCharacterIds = new Set(typedSignups.map((s) => s.character_id));
-  const myInvitedCharacters = (myCharacters ?? []).filter((c) => invitedCharacterIds.has(c.id));
-  const currentStatuses = Object.fromEntries(
-    typedSignups.map((s) => [s.character_id, s.status]),
-  ) as Record<string, Enums<"rsvp_status">>;
+  const myIds = new Set((myCharacters ?? []).map((c) => c.id));
+  const mySignup = typedSignups
+    .filter((s) => myIds.has(s.character_id) && s.slot_index !== null && s.slot_index < raid.raid_size)
+    .sort((a, b) => (a.slot_index ?? 0) - (b.slot_index ?? 0))[0];
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{raid.title}</h1>
-        <p className="font-mono text-sm text-[var(--accent-soft)]">
-          {new Date(raid.scheduled_at).toLocaleString("es-ES")} · {raid.raid_size} jugadores
-        </p>
-        {raid.notes && <p className="mt-2 text-[var(--text-muted)]">{raid.notes}</p>}
-      </div>
+      <FadeIn className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="display text-5xl font-bold uppercase sm:text-6xl">{raid.title}</h1>
+          <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <LocalDateTime iso={raid.scheduled_at} className="tabular font-medium" />
+            <span className="text-[var(--text-faint)]">·</span>
+            <span className="tabular text-[var(--text-muted)]">{raid.raid_size} jugadores</span>
+            {raid.status === "scheduled" && (
+              <Countdown iso={raid.scheduled_at} className="tabular text-sm text-[var(--accent-soft)]" />
+            )}
+          </p>
+          {raid.notes && <p className="mt-3 max-w-2xl text-[var(--text-muted)]">{raid.notes}</p>}
+        </div>
+        {officer && <AnnounceRaidButton raidEventId={id} alreadyAnnounced={announced} />}
+      </FadeIn>
 
       {!officer && !announced && (
-        <p className="text-[var(--text-muted)]">
-          La composición de esta raid todavía se está armando. Te avisaremos por
-          Discord cuando esté lista.
-        </p>
+        <div className="card p-6">
+          <p className="font-medium">La composición todavía se está armando.</p>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Te avisaremos en cuanto esté lista.</p>
+        </div>
       )}
 
-      {announced && myInvitedCharacters.length > 0 && (
-        <div>
-          <h2 className="mb-3 text-lg font-medium">Tu asistencia</h2>
-          <RsvpControls
+      {announced && mySignup && (
+        <FadeIn delay={0.05}>
+          <RaidInvitation
             raidEventId={id}
-            characters={myInvitedCharacters}
-            currentStatuses={currentStatuses}
+            scheduledAt={raid.scheduled_at}
+            character={{
+              name: mySignup.characters.name,
+              class: mySignup.characters.class,
+              spec: mySignup.characters.spec_primary,
+              role: mySignup.characters.role,
+            }}
+            group={Math.floor((mySignup.slot_index ?? 0) / GROUP_SIZE) + 1}
+            status={mySignup.status}
           />
-        </div>
+        </FadeIn>
       )}
 
       {(officer || announced) && (
@@ -89,8 +97,6 @@ export default async function RaidDetailPage({
           showStatus={announced}
         />
       )}
-
-      {officer && <AnnounceRaidButton raidEventId={id} alreadyAnnounced={announced} />}
     </div>
   );
 }

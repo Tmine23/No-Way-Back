@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { announceRaid, type AnnounceRaidResult } from "@/app/(app)/raids/actions";
+import { Magnetic } from "@/components/magnetic";
 
 export function AnnounceRaidButton({
   raidEventId,
@@ -27,27 +28,34 @@ export function AnnounceRaidButton({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <button onClick={handleClick} disabled={isPending} className="btn-primary text-sm disabled:opacity-60">
-        {isPending
-          ? "Enviando…"
-          : alreadyAnnounced
-            ? "Reenviar invitación por Discord"
-            : "Enviar invitación por Discord"}
-      </button>
+    <div className="flex flex-col items-start gap-2 sm:items-end">
+      <Magnetic>
+        <button
+          onClick={handleClick}
+          disabled={isPending}
+          className={`${alreadyAnnounced ? "btn-secondary" : "btn-primary"} min-h-11 px-5`}
+        >
+          {isPending ? "Enviando…" : alreadyAnnounced ? "Reenviar invitación" : "Notificar a la raid"}
+        </button>
+      </Magnetic>
 
-      {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
-
-      {result && (
-        <div className="text-sm text-[var(--text-muted)]">
-          {result.sent.length > 0 && <p>Enviado a: {result.sent.join(", ")}</p>}
-          {result.failed.length > 0 && (
-            <p className="text-[var(--danger)]">
-              Falló para: {result.failed.map((f) => `${f.name} (${f.reason})`).join(", ")}
-            </p>
-          )}
-        </div>
-      )}
+      <div aria-live="polite" className="text-sm sm:text-right">
+        {error && <p className="text-[var(--danger)]">{error}</p>}
+        {result && (
+          <>
+            {result.push.length > 0 && (
+              <p className="text-[var(--text-muted)]">Notificación en el celular: {result.push.join(", ")}</p>
+            )}
+            {result.discord.length > 0 && (
+              <p className="text-[var(--text-muted)]">Por DM de Discord: {result.discord.join(", ")}</p>
+            )}
+            {result.failed.length > 0 && <p className="text-[var(--danger)]">No llegó a: {result.failed.join(", ")}</p>}
+            {result.push.length + result.discord.length + result.failed.length === 0 && (
+              <p className="text-[var(--text-muted)]">No hay nadie en la composición todavía.</p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

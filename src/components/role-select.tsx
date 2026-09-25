@@ -10,7 +10,9 @@ export function RoleSelect({
   currentRole,
   assignableRoles,
   disabled,
+  label,
 }: {
+  label: string;
   memberId: string;
   currentRole: Enums<"guild_rank">;
   assignableRoles: Enums<"guild_rank">[];
@@ -23,7 +25,8 @@ export function RoleSelect({
 
   return (
     <select
-      className="input text-sm"
+      aria-label={label}
+      className="input min-h-10 text-sm"
       disabled={disabled || isPending}
       defaultValue={currentRole}
       onChange={(e) =>
@@ -44,13 +47,13 @@ export function RoleSelect({
 export function TrialToggle({ memberId, isTrial }: { memberId: string; isTrial: boolean }) {
   const [isPending, startTransition] = useTransition();
   return (
-    <label className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+    <label className="flex min-h-10 cursor-pointer items-center gap-1.5 text-sm text-[var(--text-muted)]">
       <input
         type="checkbox"
         defaultChecked={isTrial}
         disabled={isPending}
         onChange={(e) => startTransition(() => setMemberTrial(memberId, e.target.checked))}
-        className="h-3.5 w-3.5 accent-[var(--accent)]"
+        className="size-4 accent-[var(--accent)]"
       />
       Trial
     </label>

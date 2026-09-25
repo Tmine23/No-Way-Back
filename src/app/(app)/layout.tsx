@@ -22,11 +22,16 @@ export default async function AppLayout({
 
   const profile = await getCurrentProfile();
 
-  if (profile && !profile.known_as) {
+  // A session without a readable profile (expired token mid-refresh) must not reach pages that assume one.
+  if (!profile) {
+    redirect("/login");
+  }
+
+  if (!profile.known_as) {
     return <NicknameModal />;
   }
 
-  if (profile && !isApproved(profile)) {
+  if (!isApproved(profile)) {
     const { data: application } = await supabase
       .from("applications")
       .select("status")
@@ -46,14 +51,14 @@ export default async function AppLayout({
     .is("read_at", null);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <Nav
         profile={profile}
         isOfficer={isOfficer(profile)}
         isGuildMaster={isGuildMaster(profile)}
         unreadCount={unreadCount ?? 0}
       />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-8 lg:pb-16">
         {children}
       </main>
     </div>
